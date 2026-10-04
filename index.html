@@ -147,7 +147,9 @@
 
 <script>
   async function loadRecords() {
-  const snapshot = await getDocs(collection(window.firebaseDB, "records"));
+  const snapshot = await window.firebaseGetDocs(
+  window.firebaseCollection(window.firebaseDB, "records")
+);
 
   records = [];
 
@@ -162,7 +164,7 @@
   renderSummary();
 }
   
-  loadRecords();
+ 
   
   function renderSummary() {
     let fixed = 0;
@@ -291,6 +293,9 @@ function editRecord(i) {
   window.firebaseDB = db;
   window.firebaseAddDoc = addDoc;
   window.firebaseCollection = collection;
+  window.firebaseGetDocs = getDocs;
+
+  loadRecords();
 </script>
   <script type="module">
   import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
