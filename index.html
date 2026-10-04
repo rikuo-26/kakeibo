@@ -169,11 +169,24 @@
   render();
   renderSummary();
 }
-  
+async function loadIncome() {
+  const snapshot = await window.firebaseGetDoc(
+    window.firebaseDoc(window.firebaseDB, "settings", "income")
+  );
+
+  if (snapshot.exists()) {
+    income = snapshot.data();
+
+    document.getElementById("income_rikuto").value = income.rikuto;
+    document.getElementById("income_kaede").value = income.kaede;
+
+    renderSummary();
+  }
+}  
  
   
   function renderSummary() {
-    let fixed = 0;
+    let fixed = 0
     let essential = 0;
     let free = 0;
 
@@ -308,6 +321,7 @@ import { getFirestore, collection, getDocs, getDoc, addDoc, deleteDoc, doc, setD
   window.firebaseGetDoc = getDoc;
 
   loadRecords();
+  loadIncome();
 </script>
   <script type="module">
   import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
