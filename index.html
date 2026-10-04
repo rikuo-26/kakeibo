@@ -106,6 +106,10 @@
 };
 
  async function saveIncome() {
+   if (!window.firebaseAuth.currentUser) {
+  alert("先にログインしてください。");
+  return;
+}
     income.rikuto = Number(document.getElementById("income_rikuto").value);
     income.kaede = Number(document.getElementById("income_kaede").value);
    await window.firebaseSetDoc(
@@ -153,6 +157,9 @@
 
 <script>
   async function loadRecords() {
+    if (!window.firebaseAuth.currentUser) {
+  return;
+}
   const snapshot = await window.firebaseGetDocs(
   window.firebaseCollection(window.firebaseDB, "records")
 );
@@ -227,6 +234,10 @@ async function loadIncome() {
 let records = [];
 let editingRecordId = null;  
 async function addRecord() {
+  if (!window.firebaseAuth.currentUser) {
+  alert("先にログインしてください。");
+  return;
+}
   const isEditing = editingRecordId !== null;
   const r = {
     date: document.getElementById("date").value,
