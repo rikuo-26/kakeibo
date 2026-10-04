@@ -236,12 +236,15 @@ async function addRecord() {
   };
 
   try {
-    records.push(r);
+    
 
-   await window.firebaseAddDoc(
+   const docRef = await window.firebaseAddDoc(
   window.firebaseCollection(window.firebaseDB, "records"),
   r
 );
+
+r.id = docRef.id;
+records.push(r);
 
     render();
     alert("Firebaseに保存しました！");
