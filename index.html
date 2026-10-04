@@ -217,10 +217,10 @@ async function addRecord() {
   try {
     records.push(r);
 
-    await addDoc(
-      collection(window.firebaseDB, "records"),
-      r
-    );
+   await window.firebaseAddDoc(
+  window.firebaseCollection(window.firebaseDB, "records"),
+  r
+);
 
     render();
     alert("Firebaseに保存しました！");
@@ -289,6 +289,8 @@ function editRecord(i) {
 
   window.firebaseAuth = auth;
   window.firebaseDB = db;
+  window.firebaseAddDoc = addDoc;
+  window.firebaseCollection = collection;
 </script>
   <script type="module">
   import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
