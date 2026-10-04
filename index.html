@@ -205,7 +205,7 @@
   // ローカル保存から読み込み
 let records = [];
   
-  function addRecord() {
+  async function addRecord() {
     const r = {
       date: document.getElementById("date").value,
       category: document.getElementById("category").value,
@@ -215,7 +215,7 @@ let records = [];
     };
 
     records.push(r);
-    localStorage.setItem("kakeibo", JSON.stringify(records));
+    await addDoc(collection(window.firebaseDB, "records"), r);
     render();
     alert("追加しました！");
   }
@@ -262,7 +262,7 @@ function editRecord(i) {
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
   import { getAuth } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
-  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+  import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCm2ZekCOLi-JceUCcdDW5FyCdtSwh_ZJU",
