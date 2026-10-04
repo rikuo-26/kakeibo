@@ -347,9 +347,10 @@ import { getFirestore, collection, getDocs, getDoc, addDoc, deleteDoc, doc, setD
   loadIncome();
 </script>
   <script type="module">
-  import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 
   const auth = getAuth();
+   
 
   document.getElementById("login-button").addEventListener("click", async () => {
     const email = document.getElementById("login-email").value;
@@ -357,6 +358,7 @@ import { getFirestore, collection, getDocs, getDoc, addDoc, deleteDoc, doc, setD
     const message = document.getElementById("login-message");
 
     try {
+      await setPersistence(auth, browserLocalPersistence);
       await signInWithEmailAndPassword(auth, email, password);
       message.textContent = "ログインしました！";
     } catch (error) {
