@@ -225,8 +225,9 @@ async function loadIncome() {
 
   // ローカル保存から読み込み
 let records = [];
-  
+let editingRecordId = null;  
 async function addRecord() {
+  const isEditing = editingRecordId !== null;
   const r = {
     date: document.getElementById("date").value,
     category: document.getElementById("category").value,
@@ -237,16 +238,26 @@ async function addRecord() {
 
   try {
     
+if (isEditing) {
+  await window.firebaseSetDoc(
+    window.firebaseDoc(window.firebaseDB, "records", editingRecordId),
+    r
+  );
 
-   const docRef = await window.firebaseAddDoc(
-  window.firebaseCollection(window.firebaseDB, "records"),
-  r
-);
+  r.id = editingRecordId;
+  records.push(r);
+} else {
+  const docRef = await window.firebaseAddDoc(
+    window.firebaseCollection(window.firebaseDB, "records"),
+    r
+  );
 
-r.id = docRef.id;
-records.push(r);
+  r.id = docRef.id;
+  records.push(r);
+}
 
     render();
+    editingRecordId = null;
     alert("Firebaseに保存しました！");
   } catch (error) {
     console.error(error);
@@ -275,6 +286,7 @@ records.push(r);
      }
 async function editRecord(i) {
     const r = records[i];
+  editingRecordId = r.id;
 
     // 入力欄に値をセット
     document.getElementById("date").value = r.date;
@@ -283,11 +295,8 @@ async function editRecord(i) {
     document.getElementById("amount").value = r.amount;
     document.getElementById("memo").value = r.memo;
 
-    // 古いデータを削除（修正モード）
-    records.splice(i, 1);
-  await window.firebaseDeleteDoc(
-  window.firebaseDoc(window.firebaseDB, "records", r.id)
-);  
+    
+   
 
     // 一覧更新
     render();
