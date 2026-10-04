@@ -205,20 +205,30 @@
   // ローカル保存から読み込み
 let records = [];
   
-  async function addRecord() {
-    const r = {
-      date: document.getElementById("date").value,
-      category: document.getElementById("category").value,
-      item: document.getElementById("item").value,
-      amount: Number(document.getElementById("amount").value),
-      memo: document.getElementById("memo").value
-    };
+async function addRecord() {
+  const r = {
+    date: document.getElementById("date").value,
+    category: document.getElementById("category").value,
+    item: document.getElementById("item").value,
+    amount: Number(document.getElementById("amount").value),
+    memo: document.getElementById("memo").value
+  };
 
+  try {
     records.push(r);
-    await addDoc(collection(window.firebaseDB, "records"), r);
+
+    await addDoc(
+      collection(window.firebaseDB, "records"),
+      r
+    );
+
     render();
-    alert("追加しました！");
+    alert("Firebaseに保存しました！");
+  } catch (error) {
+    console.error(error);
+    alert("Firebase保存エラー：" + error.message);
   }
+}
 
   function render() {
     const list = document.getElementById("list");
