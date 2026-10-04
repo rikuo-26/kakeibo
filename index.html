@@ -146,6 +146,24 @@
 <div id="summary"></div>
 
 <script>
+  async function loadRecords() {
+  const snapshot = await getDocs(collection(window.firebaseDB, "records"));
+
+  records = [];
+
+  snapshot.forEach((doc) => {
+    records.push({
+      id: doc.id,
+      ...doc.data()
+    });
+  });
+
+  render();
+  renderSummary();
+}
+  
+  loadRecords();
+  
   function renderSummary() {
     let fixed = 0;
     let essential = 0;
@@ -185,8 +203,8 @@
   document.getElementById("date").value = new Date().toISOString().slice(0,10);
 
   // ローカル保存から読み込み
-  let records = JSON.parse(localStorage.getItem("kakeibo") || "[]");
-
+let records = [];
+  
   function addRecord() {
     const r = {
       date: document.getElementById("date").value,
@@ -244,7 +262,7 @@ function editRecord(i) {
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
   import { getAuth } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
-  import { getFirestore } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCm2ZekCOLi-JceUCcdDW5FyCdtSwh_ZJU",
