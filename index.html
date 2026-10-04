@@ -100,12 +100,18 @@
 <button onclick="saveIncome()">収入を保存する</button>
 
 <script>
-  let income = JSON.parse(localStorage.getItem("income") || '{"rikuto":0,"kaede":0}');
+ let income = {
+  rikuto: 0,
+  kaede: 0
+};
 
-  function saveIncome() {
+ async function saveIncome() {
     income.rikuto = Number(document.getElementById("income_rikuto").value);
     income.kaede = Number(document.getElementById("income_kaede").value);
-    localStorage.setItem("income", JSON.stringify(income));
+   await window.firebaseSetDoc(
+  window.firebaseDoc(window.firebaseDB, "settings", "income"),
+  income
+); 
     alert("収入を保存しました！");
     renderSummary();
   }
@@ -276,7 +282,7 @@ async function editRecord(i) {
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
   import { getAuth } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
-import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, getDoc, addDoc, deleteDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCm2ZekCOLi-JceUCcdDW5FyCdtSwh_ZJU",
@@ -298,6 +304,8 @@ import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc } from "https
   window.firebaseGetDocs = getDocs;
   window.firebaseDeleteDoc = deleteDoc;
   window.firebaseDoc = doc;
+  window.firebaseSetDoc = setDoc;
+  window.firebaseGetDoc = getDoc;
 
   loadRecords();
 </script>
