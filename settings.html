@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>設定ページ</title>
+</head>
+<body>
+
+<nav>
+  <a href="index.html">入力</a> |
+  <a href="monthly.html">月別</a> |
+  <a href="weekly.html">週次</a> |
+  <a href="daily.html">日別</a> |
+  <a href="settings.html">設定</a>
+</nav>
+<hr>
+
+<h1>設定ページ</h1>
+
+<h2>項目の追加</h2>
+<input type="text" id="new-category" placeholder="新しい項目名">
+<button onclick="addCategory()">追加</button>
+
+<ul id="category-list"></ul>
+
+<script>
+  // 項目リストを localStorage から読み込む
+  let categories = JSON.parse(localStorage.getItem("categories") || "[]");
+
+  function renderCategories() {
+    let html = "";
+    categories.forEach((c, i) => {
+      html += `<li>${c} <button onclick="deleteCategory(${i})">削除</button></li>`;
+    });
+    document.getElementById("category-list").innerHTML = html;
+  }
+
+  function addCategory() {
+    const name = document.getElementById("new-category").value.trim();
+    if (name === "") return;
+
+    categories.push(name);
+    localStorage.setItem("categories", JSON.stringify(categories));
+    document.getElementById("new-category").value = "";
+    renderCategories();
+  }
+
+  function deleteCategory(index) {
+    categories.splice(index, 1);
+    localStorage.setItem("categories", JSON.stringify(categories));
+    renderCategories();
+  }
+
+  renderCategories();
+</script>
+
+</body>
+</html>

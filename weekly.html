@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>週次集計</title>
+</head>
+<body>
+
+<nav>
+  <a href="index.html">入力</a> |
+  <a href="monthly.html">月別</a> |
+  <a href="weekly.html">週次</a> |
+  <a href="daily.html">日別</a> |
+  <a href="settings.html">設定</a>
+</nav>
+<hr>
+
+<h1>週次集計</h1>
+
+<div id="weekly-summary"></div>
+
+<script>
+  let records = JSON.parse(localStorage.getItem("records") || "[]");
+
+  function getWeekNumber(date) {
+    const d = new Date(date);
+    const onejan = new Date(d.getFullYear(), 0, 1);
+    const week = Math.ceil((((d - onejan) / 86400000) + onejan.getDay() + 1) / 7);
+    return week;
+  }
+
+  function renderWeeklySummary() {
+    let weekly = {};
+
+    records.forEach(r => {
+      const week = getWeekNumber(r.date);
+      if (!weekly[week]) weekly[week] = 0;
+      weekly[week] += r.amount;
+    });
+
+    let html = "<table border='1' cellpadding='5'><tr><th>週</th><th>支出</th></tr>";
+
+    for (let w in weekly) {
+      html += `<tr><td>${w}週</td><td>${weekly[w]} 円</td></tr>`;
+    }
+
+    html += "</table>";
+
+    document.getElementById("weekly-summary").innerHTML = html;
+  }
+
+  renderWeeklySummary();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>家計簿スマホ入力</title>
+<style>
+  body { font-family: sans-serif; padding: 20px; }
+  input, select, textarea {
+    width: 100%; padding: 10px; margin: 8px 0; font-size: 16px;
+  }
+  button {
+    width: 100%; padding: 12px; background: #007bff;
+    color: white; border: none; font-size: 18px; border-radius: 6px;
+  }
+  .record {
+    padding: 10px; margin: 10px 0; border-bottom: 1px solid #ccc;
+  }
+/* スマホ対応（画面幅600px以下） */
+@media (max-width: 600px) {
+
+    body {
+        padding: 10px;
+        font-size: 16px;
+    }
+
+    input, select, textarea {
+        width: 100%;
+        font-size: 18px;
+        padding: 10px;
+        margin-bottom: 12px;
+    }
+
+    button {
+        width: 100%;
+        padding: 14px;
+        font-size: 18px;
+        margin-top: 10px;
+    }
+
+    .record {
+        padding: 12px;
+        margin-bottom: 12px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 16px;
+    }
+
+    table {
+        width: 100%;
+        font-size: 16px;
+    }
+
+    #daily-summary, #calendar {
+        overflow-x: auto;
+    }
+}
+
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html">入力</a> |
+  <a href="monthly.html">月別</a> |
+  <a href="weekly.html">週次</a> |
+  <a href="daily.html">日別</a> |
+  <a href="settings.html">設定</a>
+</nav>
+
+
+<hr>
+
+<h2>スマホかんたん入力</h2>
+<a href="monthly.html">月別集計ページへ</a>
+<hr>
+
+<hr>
+
+<h2>収入入力</h2>
+
+<label>陸翔の収入</label>
+<input type="number" id="income_rikuto" placeholder="例：250000">
+
+<label>楓の収入</label>
+<input type="number" id="income_kaede" placeholder="例：180000">
+
+<button onclick="saveIncome()">収入を保存する</button>
+
+<script>
+  let income = JSON.parse(localStorage.getItem("income") || '{"rikuto":0,"kaede":0}');
+
+  function saveIncome() {
+    income.rikuto = Number(document.getElementById("income_rikuto").value);
+    income.kaede = Number(document.getElementById("income_kaede").value);
+    localStorage.setItem("income", JSON.stringify(income));
+    alert("収入を保存しました！");
+    renderSummary();
+  }
+
+  // 画面読み込み時に反映
+  document.getElementById("income_rikuto").value = income.rikuto;
+  document.getElementById("income_kaede").value = income.kaede;
+</script>
+
+<label>日付</label>
+<input type="date" id="date">
+
+<label>分類</label>
+<select id="category">
+  <option value="固定費">固定費</option>
+  <option value="生活必需費">生活必需費</option>
+  <option value="自由費">自由費</option>
+</select>
+
+<label>項目</label>
+<input type="text" id="item" placeholder="例：食費、電気、外食など">
+
+<label>金額</label>
+<input type="number" id="amount" placeholder="金額を入力">
+
+<label>メモ</label>
+<textarea id="memo" placeholder="任意"></textarea>
+
+<button onclick="addRecord()">追加する</button>
+
+<hr>
+
+<h2>日々の支出一覧</h2>
+<div id="list"></div>
+<hr>
+
+<h2>月間家計簿（支出集計）</h2>
+<div id="summary"></div>
+
+<script>
+  function renderSummary() {
+    let fixed = 0;
+    let essential = 0;
+    let free = 0;
+
+    records.forEach(r => {
+      if (r.category === "固定費") fixed += r.amount;
+      if (r.category === "生活必需費") essential += r.amount;
+      if (r.category === "自由費") free += r.amount;
+    });
+
+    const total = fixed + essential + free;
+ document.getElementById("summary").innerHTML = `
+  固定費合計：${fixed} 円<br>
+  生活必需費合計：${essential} 円<br>
+  自由費合計：${free} 円<br>
+  支出合計：${total} 円<br><br>
+  収入合計：${income.rikuto + income.kaede} 円<br>
+  残高（収入 − 支出）：${(income.rikuto + income.kaede) - total} 円
+`;
+
+ 
+    }
+
+  // 既存の render() の最後に追加
+  const oldRender = render;
+  render = function() {
+    oldRender();
+    renderSummary();
+  };
+
+  renderSummary();
+</script>
+
+<script>
+  // 今日の日付を自動セット
+  document.getElementById("date").value = new Date().toISOString().slice(0,10);
+
+  // ローカル保存から読み込み
+  let records = JSON.parse(localStorage.getItem("kakeibo") || "[]");
+
+  function addRecord() {
+    const r = {
+      date: document.getElementById("date").value,
+      category: document.getElementById("category").value,
+      item: document.getElementById("item").value,
+      amount: Number(document.getElementById("amount").value),
+      memo: document.getElementById("memo").value
+    };
+
+    records.push(r);
+    localStorage.setItem("kakeibo", JSON.stringify(records));
+    render();
+    alert("追加しました！");
+  }
+
+  function render() {
+    const list = document.getElementById("list");
+    list.innerHTML = "";
+
+ records.forEach((r, index) => {
+    const div = document.createElement("div");
+    div.className = "record";
+    div.innerHTML = `
+        <strong>${r.date}</strong><br>
+        分類: ${r.category}<br>
+        項目: ${r.item}<br>
+        金額: ${r.amount} 円<br>
+        メモ: ${r.memo}<br>
+        <button onclick="editRecord(${index})">修正する</button>
+    `;
+    list.appendChild(div);
+});
+
+     }
+function editRecord(i) {
+    const r = records[i];
+
+    // 入力欄に値をセット
+    document.getElementById("date").value = r.date;
+    document.getElementById("category").value = r.category;
+    document.getElementById("item").value = r.item;
+    document.getElementById("amount").value = r.amount;
+    document.getElementById("memo").value = r.memo;
+
+    // 古いデータを削除（修正モード）
+    records.splice(i, 1);
+    localStorage.setItem("kakeibo", JSON.stringify(records));
+
+    // 一覧更新
+    render();
+}
+
+  render();
+</script>
+
+</body>
+</html>

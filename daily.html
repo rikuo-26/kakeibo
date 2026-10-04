@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <meta charset="UTF-8">
+  <title>日別集計</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<head>
+<style>
+
+/* スマホ対応（画面幅600px以下） */
+@media (max-width: 600px) {
+
+    body {
+        padding: 10px;
+        font-size: 16px;
+    }
+
+    input, select, textarea {
+        width: 100%;
+        font-size: 18px;
+        padding: 10px;
+        margin-bottom: 12px;
+    }
+
+    button {
+        width: 100%;
+        padding: 14px;
+        font-size: 18px;
+        margin-top: 10px;
+    }
+
+    .record {
+        padding: 12px;
+        margin-bottom: 12px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 16px;
+    }
+
+    table {
+        width: 100%;
+        font-size: 16px;
+    }
+
+    #daily-summary, #calendar {
+        overflow-x: auto;
+    }
+}
+
+</style>
+</head>
+
+</head>
+<body>
+
+<nav>
+  <a href="index.html">入力</a> |
+  <a href="monthly.html">月別</a> |
+  <a href="weekly.html">週次</a> |
+  <a href="daily.html">日別</a> |
+  <a href="settings.html">設定</a>
+</nav>
+<hr>
+<h1>日別集計</h1>
+<div id="daily-summary"></div>
+
+<h2>日別の統計</h2>
+<div id="daily-stats"></div>
+
+<h2>日別グラフ</h2>
+<canvas id="dailyChart"></canvas>
+
+<h2>カレンダー表示</h2>
+<div id="calendar"></div>
+
+<script>
+  let daily = {};   //
+  let records = JSON.parse(localStorage.getItem("kakeibo") || "[]");
+ function renderDailyStats(daily) {
+  const days = Object.keys(daily);
+  const total = days.reduce((sum, d) => sum + daily[d], 0);
+  const avg = Math.round(total / days.length);
+  const maxDay = days.reduce((a, b) => daily[a] > daily[b] ? a : b);
+
+  let html = `
+    <p>合計：${total} 円</p>
+    <p>平均：${avg} 円</p>
+    <p>最大支出日：${maxDay}（${daily[maxDay]} 円）</p>
+  `;
+
+  document.getElementById("daily-stats").innerHTML = html;
+}
+
+  function formatDate(d) {
+    const date = new Date(d);
+    const y = date.getFullYear();
+    const m = ("0" + (date.getMonth() + 1)).slice(-2);
+    const day = ("0" + date.getDate()).slice(-2);
+    return `${y}-${m}-${day}`;
+  }
+
+  function renderDailySummary() {
+     daily = {};
+
+    records.forEach(r => {
+      const day = formatDate(r.date);
+      if (!daily[day]) daily[day] = 0;
+      daily[day] += r.amount;
+    });
+
+    let html = "<table border='1' cellpadding='5'><tr><th>日付</th><th>支出</th></tr>";
+
+    for (let day in daily) {
+      html += `<tr><td>${day}</td><td>${daily[day]} 円</td></tr>`;
+    }
+
+    html += "</table>";
+
+    document.getElementById("daily-summary").innerHTML = html;
+  }
+function renderDailyChart(daily) {
+    const ctx = document.getElementById("dailyChart").getContext("2d");
+
+    new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: Object.keys(daily),
+            datasets: [{
+                label: "日別支出",
+                data: Object.values(daily),
+                backgroundColor: "rgba(75, 192, 192, 0.6)"
+            }]
+        }
+    });
+}
+function renderCalendar(daily) {
+    let html = "<table border='1' cellpadding='5'><tr>";
+
+    const days = Object.keys(daily);
+
+    days.forEach(day => {
+        html += `<td>${day}<br>${daily[day]}円</td>`;
+    });
+
+    html += "</tr></table>";
+
+    document.getElementById("calendar").innerHTML = html;
+}
+
+  renderDailySummary();
+  renderDailyStats(daily);
+  renderDailyChart(daily);
+  renderCalendar(daily);
+
+</script>
+
+</body>
+</html>
