@@ -347,10 +347,16 @@ import { getFirestore, collection, getDocs, getDoc, addDoc, deleteDoc, doc, setD
   loadIncome();
 </script>
   <script type="module">
-import { getAuth, signInWithEmailAndPassword, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, setPersistence, browserLocalPersistence, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 
   const auth = getAuth();
-   
+    
+   onAuthStateChanged(auth, (user) => {
+  if (user) {
+    loadRecords();
+    loadIncome();
+  }
+});
 
   document.getElementById("login-button").addEventListener("click", async () => {
     const email = document.getElementById("login-email").value;
