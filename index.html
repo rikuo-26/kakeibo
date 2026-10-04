@@ -251,7 +251,7 @@ async function addRecord() {
 });
 
      }
-function editRecord(i) {
+async function editRecord(i) {
     const r = records[i];
 
     // 入力欄に値をセット
@@ -263,7 +263,9 @@ function editRecord(i) {
 
     // 古いデータを削除（修正モード）
     records.splice(i, 1);
-    localStorage.setItem("kakeibo", JSON.stringify(records));
+  await window.firebaseDeleteDoc(
+  window.firebaseDoc(window.firebaseDB, "records", r.id)
+);  
 
     // 一覧更新
     render();
@@ -274,7 +276,7 @@ function editRecord(i) {
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
   import { getAuth } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
-  import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCm2ZekCOLi-JceUCcdDW5FyCdtSwh_ZJU",
@@ -294,6 +296,8 @@ function editRecord(i) {
   window.firebaseAddDoc = addDoc;
   window.firebaseCollection = collection;
   window.firebaseGetDocs = getDocs;
+  window.firebaseDeleteDoc = deleteDoc;
+  window.firebaseDoc = doc;
 
   loadRecords();
 </script>
