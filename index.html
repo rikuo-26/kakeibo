@@ -228,6 +228,23 @@ function editRecord(i) {
 
   render();
 </script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+  import { getAuth } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+  import { getFirestore } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
+  const firebaseConfig = {
+    apiKey: "AIzaSyCm2ZekCOLi-JceUCcdDW5FyCdtSwh_ZJU",
+    authDomain: "kakeibo-94245.firebaseapp.com",
+    projectId: "kakeibo-94245",
+    storageBucket: "kakeibo-94245.firebasestorage.app",
+    messagingSenderId: "543784840442",
+    appId: "1:543784840442:web:ff3fc3d96d417590952d43"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+</script>
 </body>
 </html>
