@@ -283,29 +283,50 @@ if (isEditing) {
     alert("Firebase保存エラー：" + error.message);
   }
 }
+function render() {
+  const list = document.getElementById("list");
+  list.innerHTML = "";
 
-  function render() {
-    const list = document.getElementById("list");
-    list.innerHTML = "";
-    
-records.sort((a, b) => new Date(b.date) - new Date(a.date));
-    
- records.forEach((r, index) => {
+  records.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  let currentDate = "";
+  let details = null;
+
+  records.forEach((r, index) => {
+
+    // 日付が変わったら、新しい折りたたみグループを作る
+    if (r.date !== currentDate) {
+      currentDate = r.date;
+
+      const dateBox = document.createElement("details");
+      dateBox.className = "date-group";
+
+      const summary = document.createElement("summary");
+      summary.innerHTML = `📅 ${r.date}`;
+
+      dateBox.appendChild(summary);
+
+      details = document.createElement("div");
+      dateBox.appendChild(details);
+
+      list.appendChild(dateBox);
+    }
+
+    // 1件分の支出
     const div = document.createElement("div");
     div.className = "record";
-    div.innerHTML = `
-        <strong>${r.date}</strong><br>
-        分類: ${r.category}<br>
-        項目: ${r.item}<br>
-        金額: ${r.amount} 円<br>
-        メモ: ${r.memo}<br>
-        <button onclick="editRecord(${index})">修正する</button>
-        <button onclick="deleteRecord(${index})">削除する</button>
-    `;
-    list.appendChild(div);
-});
 
-     }
+    div.innerHTML = `
+      <strong>${r.category}　${r.item}　${r.amount.toLocaleString()} 円</strong><br>
+      メモ: ${r.memo || ""}<br>
+      <button onclick="editRecord(${index})">修正する</button>
+      <button onclick="deleteRecord(${index})">削除する</button>
+    `;
+
+    details.appendChild(div);
+  });
+}
+
 async function editRecord(i) {
     const r = records[i];
   editingRecordId = r.id;
