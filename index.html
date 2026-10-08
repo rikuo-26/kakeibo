@@ -301,8 +301,16 @@ function render() {
       const dateBox = document.createElement("details");
       dateBox.className = "date-group";
 
-      const summary = document.createElement("summary");
-      summary.innerHTML = `📅 ${r.date}`;
+     const summary = document.createElement("summary");
+
+const dateRecords = records.filter(record => record.date === r.date);
+const totalAmount = dateRecords.reduce((sum, record) => sum + Number(record.amount), 0);
+
+summary.innerHTML = `
+  📅 ${r.date}
+ 　${dateRecords.length}件
+ 　合計 ${totalAmount.toLocaleString()}円
+`;
 
       dateBox.appendChild(summary);
 
