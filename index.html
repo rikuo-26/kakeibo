@@ -295,6 +295,7 @@ if (isEditing) {
         金額: ${r.amount} 円<br>
         メモ: ${r.memo}<br>
         <button onclick="editRecord(${index})">修正する</button>
+        <button onclick="deleteRecord(${index})">削除する</button>
     `;
     list.appendChild(div);
 });
@@ -316,6 +317,28 @@ async function editRecord(i) {
 
     // 一覧更新
     render();
+}
+  async function deleteRecord(i) {
+  const r = records[i];
+
+  if (!confirm("この支出を削除しますか？")) {
+    return;
+  }
+
+  try {
+    await window.firebaseDeleteDoc(
+      window.firebaseDoc(window.firebaseDB, "records", r.id)
+    );
+
+    records.splice(i, 1);
+    render();
+    renderSummary();
+
+    alert("削除しました！");
+  } catch (error) {
+    console.error(error);
+    alert("削除エラー：" + error.message);
+  }
 }
 
   render();
