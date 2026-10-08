@@ -269,6 +269,11 @@ if (isEditing) {
 
     render();
     editingRecordId = null;
+    document.getElementById("item").value = ""; 
+    document.getElementById("amount").value = "";
+    document.getElementById("memo").value = "";
+    document.getElementById("date").value = new Date().toISOString().slice(0,10);
+    document.getElementById("category").value = "固定費";
     alert("Firebaseに保存しました！");
   } catch (error) {
     console.error(error);
