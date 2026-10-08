@@ -330,8 +330,10 @@ summary.innerHTML = `
     div.innerHTML = `
       <strong>${r.category}　${r.item}　${r.amount.toLocaleString()} 円</strong><br>
       メモ: ${r.memo || ""}<br>
-      <button onclick="editRecord(${index})">修正する</button>
-      <button onclick="deleteRecord(${index})">削除する</button>
+     <div class="record-buttons">
+       <button onclick="editRecord(${index})">修正する</button>
+       <button onclick="deleteRecord(${index})">削除する</button>
+     </div>
     `;
 
     details.appendChild(div);
