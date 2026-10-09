@@ -403,19 +403,7 @@ import { getAuth, signInWithEmailAndPassword, setPersistence, browserLocalPersis
   }
 });
 
-  document.getElementById("login-button").addEventListener("click", async () => {
-    const email = document.getElementById("login-email").value;
-    const password = document.getElementById("login-password").value;
-    const message = document.getElementById("login-message");
 
-    try {
-      await setPersistence(auth, browserLocalPersistence);
-      await signInWithEmailAndPassword(auth, email, password);
-      message.textContent = "ログインしました！";
-    } catch (error) {
-      message.textContent = "メールアドレスまたはパスワードが違います。";
-    }
-  });
 </script>
 </body>
 </html>
