@@ -22,7 +22,7 @@
 
     body {
       margin: 0;
-      padding: 20px;
+      padding: 20px 20px 105px;
       background: var(--ivory);
       color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
@@ -43,28 +43,55 @@
 
     .subtitle { color: var(--muted); font-size: 13px; }
 
-    nav {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 24px;
-    }
+ 
+/* 画面下部に固定する共通メニュー */
+.bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+  padding: 9px 6px calc(9px + env(safe-area-inset-bottom));
+  background: var(--white);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -3px 14px #354b3510;
+}
 
-    nav a {
-      padding: 9px 13px;
-      border-radius: 10px;
-      background: var(--white);
-      color: var(--dark);
-      text-decoration: none;
-      font-size: 14px;
-      border: 1px solid var(--border);
-    }
+.bottom-nav a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-width: 0;
+  padding: 4px 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 11px;
+  line-height: 1.4;
+}
 
-    nav a.active {
-      background: var(--green);
-      color: white;
-      border-color: var(--green);
-    }
+.bottom-nav a .nav-icon {
+  font-size: 20px;
+}
+
+.bottom-nav a.active {
+  color: var(--dark);
+  font-weight: bold;
+}
+
+.bottom-nav a.active .nav-icon {
+  background: var(--light);
+  border-radius: 12px;
+  padding: 2px 12px;
+}
 
     .panel {
       margin-bottom: 18px;
@@ -144,8 +171,8 @@
 
     .error { background: #f9e8e4; color: #8a3024; }
 
-    @media (max-width: 560px) {
-      body { padding: 14px; }
+@media (max-width: 560px) {
+  body { padding: 14px 14px 105px; }
       .panel { padding: 15px; }
       .summary-grid { grid-template-columns: 1fr; }
       .week-picker { justify-content: center; }
@@ -159,14 +186,28 @@
     <div class="subtitle">週ごとの家計簿</div>
   </header>
 
-  <nav>
-    <a href="index.html">入力</a>
-    <a href="monthly.html">月別</a>
-    <a href="weekly.html" class="active">週次</a>
-    <a href="daily.html">日別</a>
-    <a href="records.html">記録</a>
-    <a href="settings.html">設定</a>
-  </nav>
+ <nav class="bottom-nav" aria-label="メインメニュー">
+  <a href="index.html">
+    <span class="nav-icon">✚</span>
+    <span>入力</span>
+  </a>
+  <a href="monthly.html">
+    <span class="nav-icon">▦</span>
+    <span>月別</span>
+  </a>
+  <a href="weekly.html" class="active" aria-current="page">
+    <span class="nav-icon">▤</span>
+    <span>週次</span>
+  </a>
+  <a href="daily.html">
+    <span class="nav-icon">▣</span>
+    <span>日別</span>
+  </a>
+  <a href="settings.html">
+    <span class="nav-icon">⚙</span>
+    <span>設定</span>
+  </a>
+</nav>
 
   <div id="status" class="status">ログイン状態を確認しています…</div>
 
