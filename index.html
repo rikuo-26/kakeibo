@@ -89,7 +89,6 @@
 
   <p id="login-message"></p>
 </div>
-<a href="monthly.html">月別集計ページへ</a>
 <hr>
 
 <h2>収入入力</h2>
@@ -233,7 +232,6 @@ async function loadIncome() {
   // 今日の日付を自動セット
   document.getElementById("date").value = new Date().toISOString().slice(0,10);
 
-  // ローカル保存から読み込み
 let records = [];
 let editingRecordId = null;  
 async function addRecord() {
