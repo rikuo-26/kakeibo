@@ -176,7 +176,6 @@
   });
 
   render();
-  renderSummary();
 }
 async function loadIncome() {
   const snapshot = await window.firebaseGetDoc(
@@ -218,12 +217,6 @@ async function loadIncome() {
  
     }
 
-  // 既存の render() の最後に追加
-  const oldRender = render;
-  render = function() {
-    oldRender();
-    renderSummary();
-  };
 
   renderSummary();
 </script>
@@ -333,6 +326,7 @@ summary.innerHTML = `
 
     details.appendChild(div);
   });
+   renderSummary();
 }
 
 async function editRecord(i) {
@@ -366,8 +360,7 @@ async function editRecord(i) {
 
     records.splice(i, 1);
     render();
-    renderSummary();
-
+   
     alert("削除しました！");
   } catch (error) {
     console.error(error);
