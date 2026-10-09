@@ -1,427 +1,907 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>家計簿スマホ入力</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>入力｜ふたりの暮らし</title>
+
 <style>
-  body { font-family: sans-serif; padding: 20px; }
-  input, select, textarea {
-    width: 100%; padding: 10px; margin: 8px 0; font-size: 16px;
-  }
-  button {
-    width: 100%; padding: 12px; background: #007bff;
-    color: white; border: none; font-size: 18px; border-radius: 6px;
-  }
- 
-/* スマホ対応（画面幅600px以下） */
+:root {
+  --green: #557b63;
+  --dark: #355640;
+  --light: #e6eee5;
+  --ivory: #faf8f0;
+  --white: #fff;
+  --text: #34443a;
+  --muted: #748176;
+  --border: #dce4d9;
+  --red: #a45f48;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 20px 20px 110px;
+  background: var(--ivory);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Noto Sans JP", sans-serif;
+}
+
+main {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+header { margin-bottom: 22px; }
+
+h1 {
+  margin: 0 0 8px;
+  color: var(--dark);
+  font-size: 27px;
+}
+
+h2 {
+  margin: 0 0 16px;
+  color: var(--dark);
+  font-size: 19px;
+}
+
+.subtitle {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.panel {
+  margin-bottom: 18px;
+  padding: 20px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 3px 12px #354b3508;
+}
+
+label {
+  display: block;
+  margin: 14px 0 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--dark);
+}
+
+input, select, textarea {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  padding: 12px;
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fffefa;
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+}
+
+textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+button {
+  padding: 12px 16px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--green);
+  color: white;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.primary-button {
+  width: 100%;
+  margin-top: 18px;
+}
+
+.secondary-button {
+  background: var(--light);
+  color: var(--dark);
+}
+
+.danger-button {
+  background: #f7e8e3;
+  color: #8a382a;
+}
+
+.income-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.income-total {
+  margin-top: 16px;
+  padding: 15px;
+  border-radius: 12px;
+  background: var(--light);
+}
+
+.income-total span {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.income-total strong {
+  display: block;
+  margin-top: 5px;
+  color: var(--dark);
+  font-size: 23px;
+  overflow-wrap: anywhere;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.stat {
+  min-width: 0;
+  padding: 15px;
+  border-radius: 12px;
+  background: var(--ivory);
+}
+
+.stat-label {
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.stat-value {
+  color: var(--dark);
+  font-size: clamp(17px, 3vw, 23px);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.stat-value.negative { color: var(--red); }
+
+.category-summary {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.category-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.category-row strong {
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.status {
+  margin-bottom: 18px;
+  padding: 13px;
+  border-radius: 10px;
+  background: var(--light);
+  color: var(--dark);
+  font-size: 14px;
+}
+
+.status.error {
+  background: #f9e8e4;
+  color: #8a3024;
+}
+
+.date-group {
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--white);
+  overflow: hidden;
+}
+
+.date-group summary {
+  padding: 15px 12px;
+  background: var(--light);
+  color: var(--dark);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.date-group-content { padding: 0 13px; }
+
+.record {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.record:last-child { border-bottom: 0; }
+
+.record-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.record-name {
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.record-amount {
+  flex-shrink: 0;
+  color: var(--red);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.record-meta {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.record-memo {
+  margin-top: 6px;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.record-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.record-actions button {
+  width: auto;
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+.empty {
+  padding: 22px 12px;
+  text-align: center;
+  color: var(--muted);
+  background: var(--ivory);
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+  padding: 9px 6px calc(9px + env(safe-area-inset-bottom));
+  background: var(--white);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -3px 14px #354b3510;
+}
+
+.bottom-nav a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-width: 0;
+  padding: 4px 0;
+  border-radius: 10px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.nav-icon { font-size: 20px; }
+
+.bottom-nav a.active {
+  color: var(--dark);
+  font-weight: bold;
+}
+
+.bottom-nav a.active .nav-icon {
+  padding: 2px 12px;
+  border-radius: 12px;
+  background: var(--light);
+}
+
 @media (max-width: 600px) {
-
-    body {
-        padding: 10px;
-        font-size: 16px;
-    }
-
-    input, select, textarea {
-        width: 100%;
-        font-size: 18px;
-        padding: 10px;
-        margin-bottom: 12px;
-    }
-
-    button {
-        width: 100%;
-        padding: 14px;
-        font-size: 18px;
-        margin-top: 10px;
-    }
-
-    .record {
-        padding: 12px;
-        margin-bottom: 12px;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        font-size: 15px;
-    }
-   .record button {
-    width: auto !important;
-    display: inline-block !important;
-    margin-top: 4px;
-    margin-right: 4px;
-    padding: 2px 6px;
-    font-size: 11px;
+  body { padding: 12px 12px 110px; }
+  h1 { font-size: 24px; }
+  .panel { padding: 15px; }
+  .income-grid { grid-template-columns: 1fr; gap: 4px; }
+  .summary-grid { grid-template-columns: 1fr; }
+  .record-top { gap: 8px; }
+  .date-group summary { line-height: 1.7; }
 }
-    table {
-        width: 100%;
-        font-size: 16px;
-    }
-
-    #daily-summary, #calendar {
-        overflow-x: auto;
-    }
-}
-
 </style>
 </head>
+
 <body>
-<nav>
-  <a href="index.html">入力</a> |
-  <a href="monthly.html">月別</a> |
-  <a href="weekly.html">週次</a> |
-  <a href="daily.html">日別</a> |
-  <a href="records.html">記録</a> |
-  <a href="settings.html">設定</a> |
-  <button id="logout-button" type="button">ログアウト</button>
-</nav>
+<main>
+  <header>
+    <h1>ふたりの暮らし 🌿</h1>
+    <div class="subtitle">毎日の収入と支出を、ふたりで管理</div>
+  </header>
 
+  <div id="status" class="status">ログイン状態を確認しています…</div>
 
-<hr>
+  <div id="app" hidden>
+    <section class="panel">
+      <h2>収入入力</h2>
 
-<h2>スマホかんたん入力</h2>
- 
-<h2>収入入力</h2>
+      <div class="income-grid">
+        <div>
+          <label for="income_rikuto">陸翔の収入</label>
+          <input type="number" id="income_rikuto"
+            min="0" step="1" placeholder="例：250000">
+        </div>
+        <div>
+          <label for="income_kaede">楓の収入</label>
+          <input type="number" id="income_kaede"
+            min="0" step="1" placeholder="例：180000">
+        </div>
+      </div>
 
-<label>陸翔の収入</label>
-<input type="number" id="income_rikuto" placeholder="例：250000">
+      <button id="save-income-button" class="primary-button" type="button">
+        収入を保存する
+      </button>
 
-<label>楓の収入</label>
-<input type="number" id="income_kaede" placeholder="例：180000">
+      <div class="income-total">
+        <span>ふたりの収入合計</span>
+        <strong id="income-total">0 円</strong>
+      </div>
+    </section>
 
-<button onclick="saveIncome()">収入を保存する</button>
+    <section class="panel">
+      <h2 id="form-heading">支出を入力</h2>
 
-<script>
- let income = {
-  rikuto: 0,
-  kaede: 0
+      <label for="date">日付</label>
+      <input type="date" id="date" required>
+
+      <label for="category">分類</label>
+      <select id="category">
+        <option value="固定費">固定費</option>
+        <option value="生活必需費">生活必需費</option>
+        <option value="自由費">自由費</option>
+      </select>
+
+      <label for="item">項目</label>
+      <input type="text" id="item" maxlength="100"
+        placeholder="例：食費、電気、外食など">
+
+      <label for="amount">金額（円）</label>
+      <input type="number" id="amount" min="1" step="1"
+        placeholder="金額を入力">
+
+      <label for="memo">メモ（任意）</label>
+      <textarea id="memo" maxlength="1000" placeholder="メモを入力"></textarea>
+
+      <button id="add-button" class="primary-button" type="button">
+        支出を追加する
+      </button>
+      <button id="cancel-edit-button" class="secondary-button"
+        type="button" hidden>
+        修正をキャンセル
+      </button>
+    </section>
+
+    <section class="panel">
+      <h2>支出の集計</h2>
+
+      <div class="summary-grid">
+        <div class="stat">
+          <div class="stat-label">支出合計</div>
+          <div class="stat-value" id="expense-total">0 円</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">残高（収入 − 支出）</div>
+          <div class="stat-value" id="balance">0 円</div>
+        </div>
+      </div>
+
+      <div class="category-summary">
+        <div class="category-row">
+          <span>固定費</span>
+          <strong id="fixed-total">0 円</strong>
+        </div>
+        <div class="category-row">
+          <span>生活必需費</span>
+          <strong id="essential-total">0 円</strong>
+        </div>
+        <div class="category-row">
+          <span>自由費</span>
+          <strong id="free-total">0 円</strong>
+        </div>
+      </div>
+      <p class="subtitle">集計は登録済みの全支出を対象にしています。</p>
+    </section>
+
+    <section class="panel">
+      <h2>日々の支出一覧</h2>
+      <p class="subtitle">日付ごとに折りたたんで確認できます。</p>
+      <div id="list"></div>
+    </section>
+  </div>
+
+  <nav class="bottom-nav" aria-label="メインメニュー">
+    <a href="index.html" class="active" aria-current="page">
+      <span class="nav-icon">✚</span>
+      <span>入力</span>
+    </a>
+    <a href="monthly.html">
+      <span class="nav-icon">▦</span>
+      <span>月別</span>
+    </a>
+    <a href="weekly.html">
+      <span class="nav-icon">▤</span>
+      <span>週次</span>
+    </a>
+    <a href="daily.html">
+      <span class="nav-icon">▣</span>
+      <span>日別</span>
+    </a>
+    <a href="settings.html">
+      <span class="nav-icon">⚙</span>
+      <span>設定</span>
+    </a>
+  </nav>
+</main>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+import {
+  getAuth,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  getDoc,
+  addDoc,
+  deleteDoc,
+  doc,
+  setDoc
+} from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCm2ZekCOLi-JceUCcdDW5FyCdtSwh_ZJU",
+  authDomain: "kakeibo-94245.firebaseapp.com",
+  projectId: "kakeibo-94245",
+  storageBucket: "kakeibo-94245.firebasestorage.app",
+  messagingSenderId: "543784840442",
+  appId: "1:543784840442:web:ff3fc3d96d417590952d43"
 };
 
- async function saveIncome() {
-   if (!window.firebaseAuth.currentUser) {
-  alert("先にログインしてください。");
-  return;
-}
-    income.rikuto = Number(document.getElementById("income_rikuto").value);
-    income.kaede = Number(document.getElementById("income_kaede").value);
-   await window.firebaseSetDoc(
-  window.firebaseDoc(window.firebaseDB, "settings", "income"),
-  income
-); 
-    alert("収入を保存しました！");
-    renderSummary();
-  }
+const firebaseApp = initializeApp(firebaseConfig);
+const auth = getAuth(firebaseApp);
+const db = getFirestore(firebaseApp);
 
-  // 画面読み込み時に反映
-  document.getElementById("income_rikuto").value = income.rikuto;
-  document.getElementById("income_kaede").value = income.kaede;
-</script>
+const $ = id => document.getElementById(id);
 
-<label>日付</label>
-<input type="date" id="date">
-
-<label>分類</label>
-<select id="category">
-  <option value="固定費">固定費</option>
-  <option value="生活必需費">生活必需費</option>
-  <option value="自由費">自由費</option>
-</select>
-
-<label>項目</label>
-<input type="text" id="item" placeholder="例：食費、電気、外食など">
-
-<label>金額</label>
-<input type="number" id="amount" placeholder="金額を入力">
-
-<label>メモ</label>
-<textarea id="memo" placeholder="任意"></textarea>
-
-<button onclick="addRecord()">追加する</button>
-
-<hr>
-
-<h2>日々の支出一覧</h2>
-<div id="list"></div>
-<hr>
-
-<h2>月間家計簿（支出集計）</h2>
-<div id="summary"></div>
-
-<script>
-  async function loadRecords() {
-    if (!window.firebaseAuth.currentUser) {
-  return;
-}
-  const snapshot = await window.firebaseGetDocs(
-  window.firebaseCollection(window.firebaseDB, "records")
-);
-
-  records = [];
-
-  snapshot.forEach((doc) => {
-    records.push({
-      id: doc.id,
-      ...doc.data()
-    });
-  });
-
-  render();
-}
-async function loadIncome() {
-  const snapshot = await window.firebaseGetDoc(
-    window.firebaseDoc(window.firebaseDB, "settings", "income")
-  );
-
-  if (snapshot.exists()) {
-    income = snapshot.data();
-
-    document.getElementById("income_rikuto").value = income.rikuto;
-    document.getElementById("income_kaede").value = income.kaede;
-
-    renderSummary();
-  }
-}  
- 
-  
-  function renderSummary() {
-    let fixed = 0
-    let essential = 0;
-    let free = 0;
-
-    records.forEach(r => {
-      if (r.category === "固定費") fixed += r.amount;
-      if (r.category === "生活必需費") essential += r.amount;
-      if (r.category === "自由費") free += r.amount;
-    });
-
-    const total = fixed + essential + free;
- document.getElementById("summary").innerHTML = `
-  固定費合計：${fixed} 円<br>
-  生活必需費合計：${essential} 円<br>
-  自由費合計：${free} 円<br>
-  支出合計：${total} 円<br><br>
-  収入合計：${income.rikuto + income.kaede} 円<br>
-  残高（収入 − 支出）：${(income.rikuto + income.kaede) - total} 円
-`;
-
- 
-    }
-
-
-</script>
-
-<script>
-  // 今日の日付を自動セット
-  document.getElementById("date").value = new Date().toISOString().slice(0,10);
+const statusBox = $("status");
+const appSection = $("app");
+const listElement = $("list");
 
 let records = [];
-let editingRecordId = null;  
-async function addRecord() {
-  if (!window.firebaseAuth.currentUser) {
-  alert("先にログインしてください。");
-  return;
+let income = { rikuto: 0, kaede: 0 };
+let editingRecordId = null;
+let currentUser = null;
+let saving = false;
+
+function localDateString(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
-  const isEditing = editingRecordId !== null;
-  const r = {
-    date: document.getElementById("date").value,
-    category: document.getElementById("category").value,
-    item: document.getElementById("item").value,
-    amount: Number(document.getElementById("amount").value),
-    memo: document.getElementById("memo").value
-  };
 
-  try {
-    
-if (isEditing) {
-  await window.firebaseSetDoc(
-    window.firebaseDoc(window.firebaseDB, "records", editingRecordId),
-    r
-  );
+function yen(value) {
+  const number = Number(value);
+  return `${Math.round(Number.isFinite(number) ? number : 0).toLocaleString("ja-JP")} 円`;
+}
 
-  r.id = editingRecordId;
-  const index = records.findIndex(record => record.id === editingRecordId);
-  if (index !== -1) {
-    records[index] = r;
+function safeNumber(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : 0;
+}
+
+function showStatus(message, isError = false) {
+  statusBox.textContent = message;
+  statusBox.classList.toggle("error", isError);
+  statusBox.hidden = false;
+}
+
+function requireLogin() {
+  if (currentUser) return true;
+  alert("ログインしてください。");
+  window.location.replace("login.html");
+  return false;
+}
+
+function setSaving(value) {
+  saving = value;
+  $("save-income-button").disabled = value;
+  $("add-button").disabled = value;
+}
+
+function renderSummary() {
+  let fixed = 0;
+  let essential = 0;
+  let free = 0;
+
+  for (const record of records) {
+    const amount = safeNumber(record.amount);
+    if (record.category === "固定費") fixed += amount;
+    if (record.category === "生活必需費") essential += amount;
+    if (record.category === "自由費") free += amount;
   }
-  
-} else {
-  const docRef = await window.firebaseAddDoc(
-    window.firebaseCollection(window.firebaseDB, "records"),
-    r
-  );
 
-  r.id = docRef.id;
-  records.push(r);
+  const total = fixed + essential + free;
+  const incomeTotal = safeNumber(income.rikuto) + safeNumber(income.kaede);
+  const balance = incomeTotal - total;
+
+  $("income-total").textContent = yen(incomeTotal);
+  $("expense-total").textContent = yen(total);
+  $("balance").textContent = yen(balance);
+  $("balance").classList.toggle("negative", balance < 0);
+  $("fixed-total").textContent = yen(fixed);
+  $("essential-total").textContent = yen(essential);
+  $("free-total").textContent = yen(free);
 }
 
-    render();
-    editingRecordId = null;
-    document.getElementById("item").value = ""; 
-    document.getElementById("amount").value = "";
-    document.getElementById("memo").value = "";
-    document.getElementById("date").value = new Date().toISOString().slice(0,10);
-    document.getElementById("category").value = "固定費";
-    alert("Firebaseに保存しました！");
-  } catch (error) {
-    console.error(error);
-    alert("Firebase保存エラー：" + error.message);
-  }
+function makeElement(tag, className, text) {
+  const element = document.createElement(tag);
+  if (className) element.className = className;
+  if (text !== undefined) element.textContent = text;
+  return element;
 }
+
 function render() {
-  const list = document.getElementById("list");
-  list.innerHTML = "";
+  listElement.replaceChildren();
 
-  records.sort((a, b) => new Date(b.date) - new Date(a.date));
+  const sortedRecords = [...records].sort((a, b) => {
+    const dateOrder = String(b.date || "").localeCompare(String(a.date || ""));
+    if (dateOrder !== 0) return dateOrder;
+    return String(a.item || "").localeCompare(String(b.item || ""), "ja");
+  });
 
-  let currentDate = "";
-  let details = null;
+  if (sortedRecords.length === 0) {
+    listElement.appendChild(
+      makeElement("div", "empty", "まだ支出がありません。最初の支出を追加してみましょう 🌿")
+    );
+    renderSummary();
+    return;
+  }
 
-  records.forEach((r, index) => {
+  let currentDate = null;
+  let groupContent = null;
 
-    // 日付が変わったら、新しい折りたたみグループを作る
-    if (r.date !== currentDate) {
-      currentDate = r.date;
+  for (const record of sortedRecords) {
+    if (record.date !== currentDate) {
+      currentDate = record.date;
 
-      const dateBox = document.createElement("details");
-      dateBox.className = "date-group";
+      const dateRecords = sortedRecords.filter(item => item.date === currentDate);
+      const dayTotal = dateRecords.reduce(
+        (sum, item) => sum + safeNumber(item.amount), 0
+      );
 
-     const summary = document.createElement("summary");
+      const details = document.createElement("details");
+      details.className = "date-group";
+      details.open = currentDate === localDateString();
 
-const dateRecords = records.filter(record => record.date === r.date);
-const totalAmount = dateRecords.reduce((sum, record) => sum + Number(record.amount), 0);
+      const summary = document.createElement("summary");
+      summary.textContent =
+        `📅 ${currentDate || "日付なし"}　${dateRecords.length}件　合計 ${yen(dayTotal)}`;
 
-summary.innerHTML = `
-  📅 ${r.date}
- 　${dateRecords.length}件
- 　合計 ${totalAmount.toLocaleString()}円
-`;
-
-      dateBox.appendChild(summary);
-
-      details = document.createElement("div");
-      dateBox.appendChild(details);
-
-      list.appendChild(dateBox);
+      groupContent = makeElement("div", "date-group-content");
+      details.append(summary, groupContent);
+      listElement.appendChild(details);
     }
 
-    // 1件分の支出
-    const div = document.createElement("div");
-    div.className = "record";
+    const article = makeElement("article", "record");
+    const top = makeElement("div", "record-top");
+    const name = makeElement("div", "record-name", record.item || "（項目なし）");
+    const amount = makeElement("div", "record-amount", yen(record.amount));
 
-    div.innerHTML = `
-      <strong>${r.category}　${r.item}　${r.amount.toLocaleString()} 円</strong><br>
-      メモ: ${r.memo || ""}<br>
-   <div style="display: flex; gap: 5px;">
-     
-<button onclick="editRecord(${index})" style="width: auto; padding: 5px 10px; font-size: 12px; color: white; background-color: blue; border: none; border-radius: 5px;">修正する</button>
-<button onclick="deleteRecord(${index})" style="width: auto; padding: 5px 10px; font-size: 12px; color: white; background-color: red; border: none; border-radius: 5px;">削除する</button>
+    top.append(name, amount);
+    article.appendChild(top);
 
-</div>
-    `;
-
-    details.appendChild(div);
-  });
-   renderSummary();
-  
-}
-
-async function editRecord(i) {
-    const r = records[i];
-  editingRecordId = r.id;
-
-    // 入力欄に値をセット
-    document.getElementById("date").value = r.date;
-    document.getElementById("category").value = r.category;
-    document.getElementById("item").value = r.item;
-    document.getElementById("amount").value = r.amount;
-    document.getElementById("memo").value = r.memo;
-
-    
-   
-
-    // 一覧更新
-    render();
-}
-
-async function deleteRecord(i) {
-  if (!window.firebaseAuth.currentUser) {
-    alert("先にログインしてください。");
-    return;
-  }
-
-  const r = records[i];
-
-  if (!confirm("この支出を削除しますか？")) {
-    return;
-  }
-
-  try {
-    await window.firebaseDeleteDoc(
-      window.firebaseDoc(window.firebaseDB, "records", r.id)
+    article.appendChild(
+      makeElement("div", "record-meta", record.category || "カテゴリー未設定")
     );
 
-    records.splice(i, 1);
-    render();
+    if (record.memo) {
+      article.appendChild(
+        makeElement("div", "record-memo", `メモ：${record.memo}`)
+      );
+    }
 
-    alert("削除しました！");
+    const actions = makeElement("div", "record-actions");
+
+    const editButton = makeElement("button", "secondary-button", "修正する");
+    editButton.type = "button";
+    editButton.addEventListener("click", () => editRecord(record.id));
+
+    const deleteButton = makeElement("button", "danger-button", "削除する");
+    deleteButton.type = "button";
+    deleteButton.addEventListener("click", () => deleteRecord(record.id));
+
+    actions.append(editButton, deleteButton);
+    article.appendChild(actions);
+    groupContent.appendChild(article);
+  }
+
+  renderSummary();
+}
+
+function clearExpenseForm() {
+  editingRecordId = null;
+  $("date").value = localDateString();
+  $("category").value = "固定費";
+  $("item").value = "";
+  $("amount").value = "";
+  $("memo").value = "";
+  $("form-heading").textContent = "支出を入力";
+  $("add-button").textContent = "支出を追加する";
+  $("cancel-edit-button").hidden = true;
+}
+
+async function loadRecords() {
+  const snapshot = await getDocs(collection(db, "records"));
+  records = snapshot.docs.map(item => ({
+    id: item.id,
+    ...item.data()
+  }));
+}
+
+async function loadIncome() {
+  const snapshot = await getDoc(doc(db, "settings", "income"));
+
+  if (snapshot.exists()) {
+    const data = snapshot.data();
+    income = {
+      rikuto: safeNumber(data.rikuto),
+      kaede: safeNumber(data.kaede)
+    };
+  } else {
+    income = { rikuto: 0, kaede: 0 };
+  }
+
+  $("income_rikuto").value = income.rikuto || "";
+  $("income_kaede").value = income.kaede || "";
+}
+
+async function saveIncome() {
+  if (!requireLogin() || saving) return;
+
+  const rikutoText = $("income_rikuto").value;
+  const kaedeText = $("income_kaede").value;
+
+  if (rikutoText === "" || kaedeText === "") {
+    alert("ふたりの収入を入力してください。");
+    return;
+  }
+
+  const rikuto = Number(rikutoText);
+  const kaede = Number(kaedeText);
+
+  if (
+    !Number.isFinite(rikuto) || rikuto < 0 ||
+    !Number.isFinite(kaede) || kaede < 0
+  ) {
+    alert("収入は0以上の数字で入力してください。");
+    return;
+  }
+
+  setSaving(true);
+
+  try {
+    const newIncome = { rikuto, kaede };
+    await setDoc(doc(db, "settings", "income"), newIncome);
+    income = newIncome;
+    renderSummary();
+    alert("収入を保存しました！");
   } catch (error) {
-    console.error(error);
-    alert("削除エラー：" + error.message);
+    console.error("収入保存エラー:", error);
+    alert("収入の保存に失敗しました：" + error.message);
+  } finally {
+    setSaving(false);
   }
 }
 
+async function addRecord() {
+  if (!requireLogin() || saving) return;
 
-  render();
-</script>
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-  import { getAuth } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
-import { getFirestore, collection, getDocs, getDoc, addDoc, deleteDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+  const date = $("date").value;
+  const category = $("category").value;
+  const item = $("item").value.trim();
+  const amountText = $("amount").value;
+  const amount = Number(amountText);
+  const memo = $("memo").value.trim();
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyCm2ZekCOLi-JceUCcdDW5FyCdtSwh_ZJU",
-    authDomain: "kakeibo-94245.firebaseapp.com",
-    projectId: "kakeibo-94245",
-    storageBucket: "kakeibo-94245.firebasestorage.app",
-    messagingSenderId: "543784840442",
-    appId: "1:543784840442:web:ff3fc3d96d417590952d43"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-
-  window.firebaseAuth = auth;
-  window.firebaseDB = db;
-  window.firebaseAddDoc = addDoc;
-  window.firebaseCollection = collection;
-  window.firebaseGetDocs = getDocs;
-  window.firebaseDeleteDoc = deleteDoc;
-  window.firebaseDoc = doc;
-  window.firebaseSetDoc = setDoc;
-  window.firebaseGetDoc = getDoc;
-
-</script>
-  <script type="module">
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
-
-  const auth = getAuth();
-    
-  onAuthStateChanged(auth, (user) => {
-  if (user) {
-    loadRecords();
-    loadIncome();
-  } else {
-    window.location.href = "login.html";
+  if (!date) {
+    alert("日付を選択してください。");
+    return;
   }
-});
-document.getElementById("logout-button").addEventListener("click", async () => {
+
+  if (!item) {
+    alert("項目を入力してください。");
+    $("item").focus();
+    return;
+  }
+
+  if (
+    amountText === "" ||
+    !Number.isFinite(amount) ||
+    amount <= 0
+  ) {
+    alert("金額は1円以上で入力してください。");
+    $("amount").focus();
+    return;
+  }
+
+  const recordData = { date, category, item, amount, memo };
+  const isEditing = editingRecordId !== null;
+  setSaving(true);
+
+  try {
+    if (isEditing) {
+      const id = editingRecordId;
+      await setDoc(doc(db, "records", id), recordData);
+
+      records = records.map(record =>
+        record.id === id ? { id, ...recordData } : record
+      );
+    } else {
+      const docRef = await addDoc(collection(db, "records"), recordData);
+      records.push({ id: docRef.id, ...recordData });
+    }
+
+    clearExpenseForm();
+    render();
+    alert(isEditing ? "支出を修正しました！" : "支出を追加しました！");
+  } catch (error) {
+    console.error("支出保存エラー:", error);
+    alert("保存に失敗しました：" + error.message);
+  } finally {
+    setSaving(false);
+  }
+}
+
+function editRecord(id) {
+  if (!requireLogin()) return;
+
+  const record = records.find(item => item.id === id);
+  if (!record) {
+    alert("対象の支出が見つかりません。");
+    return;
+  }
+
+  editingRecordId = id;
+  $("date").value = record.date || localDateString();
+  $("category").value = record.category || "固定費";
+  $("item").value = record.item || "";
+  $("amount").value = record.amount ?? "";
+  $("memo").value = record.memo || "";
+  $("form-heading").textContent = "支出を修正";
+  $("add-button").textContent = "修正を保存する";
+  $("cancel-edit-button").hidden = false;
+
+  $("form-heading").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+async function deleteRecord(id) {
+  if (!requireLogin() || saving) return;
+
+  const record = records.find(item => item.id === id);
+  if (!record) {
+    alert("対象の支出が見つかりません。");
+    return;
+  }
+
+  if (!confirm(
+    `「${record.item || "項目なし"}」 ${yen(record.amount)} を削除しますか？`
+  )) {
+    return;
+  }
+
+  setSaving(true);
+
+  try {
+    await deleteDoc(doc(db, "records", id));
+    records = records.filter(item => item.id !== id);
+
+    if (editingRecordId === id) clearExpenseForm();
+
+    render();
+    alert("削除しました！");
+  } catch (error) {
+    console.error("支出削除エラー:", error);
+    alert("削除に失敗しました：" + error.message);
+  } finally {
+    setSaving(false);
+  }
+}
+
+$("save-income-button").addEventListener("click", saveIncome);
+$("add-button").addEventListener("click", addRecord);
+$("cancel-edit-button").addEventListener("click", clearExpenseForm);
+
+$("logout-button")?.addEventListener("click", async () => {
+  if (!currentUser) {
+    window.location.replace("login.html");
+    return;
+  }
+
   try {
     await signOut(auth);
-    window.location.href = "login.html";
+    window.location.replace("login.html");
   } catch (error) {
-    alert("ログアウトに失敗しました。もう一度試してください。");
+    console.error("ログアウトエラー:", error);
+    alert("ログアウトに失敗しました。もう一度お試しください。");
   }
 });
 
+$("date").value = localDateString();
+
+onAuthStateChanged(auth, async user => {
+  currentUser = user;
+
+  if (!user) {
+    window.location.replace("login.html");
+    return;
+  }
+
+  appSection.hidden = true;
+  showStatus("家計簿データを読み込んでいます…");
+
+  try {
+    await Promise.all([loadRecords(), loadIncome()]);
+    render();
+    statusBox.hidden = true;
+    appSection.hidden = false;
+  } catch (error) {
+    console.error("家計簿データ読み込みエラー:", error);
+    showStatus(
+      "データを読み込めませんでした。通信状態とFirestoreのルールを確認してください。",
+      true
+    );
+  }
+});
 </script>
 </body>
 </html>
