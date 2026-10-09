@@ -391,7 +391,7 @@ import { getFirestore, collection, getDocs, getDoc, addDoc, deleteDoc, doc, setD
 
 </script>
   <script type="module">
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 
   const auth = getAuth();
     
@@ -403,7 +403,14 @@ import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/
     window.location.href = "login.html";
   }
 });
-
+document.getElementById("logout-button").addEventListener("click", async () => {
+  try {
+    await signOut(auth);
+    window.location.href = "login.html";
+  } catch (error) {
+    alert("ログアウトに失敗しました。もう一度試してください。");
+  }
+});
 
 </script>
 </body>
