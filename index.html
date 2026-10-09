@@ -1014,7 +1014,7 @@ async function deleteRecord(id) {
     if (editingRecordId === id) clearExpenseForm();
 
     render();
-    alert("削除しました！");
+    showNotice("削除しました！", "支出一覧を更新しました。");
   } catch (error) {
     console.error("支出削除エラー:", error);
     alert("削除に失敗しました：" + error.message);
