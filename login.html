@@ -5,36 +5,67 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>家計簿ログイン</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      max-width: 500px;
-      margin: 40px auto;
-      padding: 20px;
-    }
+ ```html
+<style>
+  body {
+    font-family: sans-serif;
+    max-width: 500px;
+    margin: 40px auto;
+    padding: 20px;
+    box-sizing: border-box;
+    background: #f3f0e6;
+    color: #304b38;
+  }
 
-    input {
-      box-sizing: border-box;
-      width: 100%;
-      padding: 12px;
-      margin: 8px 0 16px;
-      font-size: 16px;
-    }
+  input {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0 16px;
+    font-size: 16px;
+    border: 1px solid #d9ded1;
+    border-radius: 8px;
+    background: #fffdf7;
+    color: #304b38;
+  }
 
-    button {
-      width: 100%;
-      padding: 12px;
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 18px;
-    }
+  input:focus {
+    outline: 2px solid #8ba58a;
+    border-color: #52765a;
+  }
 
-    #login-message {
-      overflow-wrap: anywhere;
-    }
-  </style>
+  button {
+    width: 100%;
+    padding: 14px;
+    background: #52765a;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 18px;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background: #42634b;
+  }
+
+  button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  label {
+    font-size: 14px;
+    font-weight: bold;
+    color: #52624f;
+  }
+
+  #login-message {
+    overflow-wrap: anywhere;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+</style>
 </head>
 <body>
   <h2>家計簿ログイン</h2>
