@@ -1,1 +1,360 @@
 
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>過去の記録 | ふたりの暮らし</title>
+  <link rel="icon" href="icon.png" type="image/png">
+  <link rel="apple-touch-icon" href="icon.png">
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: sans-serif;
+      background: #f3f0e6;
+      color: #304b38;
+    }
+
+    main {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 24px;
+      padding: 14px;
+      background: #fffdf7;
+      border-radius: 12px;
+    }
+
+    nav a {
+      color: #42634b;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    nav a:hover { text-decoration: underline; }
+
+    h1 { font-size: 26px; margin-bottom: 6px; }
+    .description { color: #71816b; font-size: 14px; }
+
+    .card {
+      margin-top: 18px;
+      padding: 20px;
+      background: #fffdf7;
+      border: 1px solid #e3e2d5;
+      border-radius: 16px;
+      box-shadow: 0 4px 14px rgba(48,75,56,0.05);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+
+    select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #d9ded1;
+      border-radius: 8px;
+      background: white;
+      color: #304b38;
+      font-size: 16px;
+    }
+
+    .total-label { color: #71816b; font-size: 14px; }
+
+    #monthly-total {
+      margin-top: 8px;
+      font-size: 28px;
+      font-weight: bold;
+      color: #42634b;
+    }
+
+    .record {
+      padding: 14px 0;
+      border-bottom: 1px solid #e3e2d5;
+    }
+
+    .record:last-child { border-bottom: none; }
+
+    .record-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .record-item {
+      font-weight: bold;
+      overflow-wrap: anywhere;
+    }
+
+    .record-amount {
+      font-weight: bold;
+      white-space: nowrap;
+      color: #42634b;
+    }
+
+    .record-meta, .record-memo {
+      margin-top: 6px;
+      color: #71816b;
+      font-size: 13px;
+      overflow-wrap: anywhere;
+    }
+
+    .message {
+      padding: 18px 0;
+      color: #71816b;
+      text-align: center;
+    }
+
+    .logout {
+      margin-left: auto;
+      padding: 6px 10px;
+      border: 1px solid #d9ded1;
+      border-radius: 7px;
+      background: #fffdf7;
+      color: #42634b;
+      cursor: pointer;
+    }
+
+    @media (max-width: 480px) {
+      body { padding: 12px; }
+      .card { padding: 16px; }
+      h1 { font-size: 23px; }
+    }
+  </style>
+</head>
+
+<body>
+<main>
+  <nav>
+    <a href="index.html">入力</a>
+    <a href="monthly.html">月別</a>
+    <a href="weekly.html">週次</a>
+    <a href="daily.html">日別</a>
+    <a href="records.html">過去の記録</a>
+    <a href="settings.html">設定</a>
+    <button class="logout" id="logout-button" type="button">ログアウト</button>
+  </nav>
+
+  <h1>過去の記録</h1>
+  <p class="description">ふたりの支出を、月ごとに振り返ろう。</p>
+
+  <section class="card">
+    <label for="month-select">表示する月</label>
+    <select id="month-select" disabled>
+      <option value="">記録を読み込み中…</option>
+    </select>
+  </section>
+
+  <section class="card">
+    <div class="total-label">選択した月の支出合計</div>
+    <div id="monthly-total">— 円</div>
+    <div id="record-count" class="description"></div>
+  </section>
+
+  <section class="card">
+    <h2>支出一覧</h2>
+    <div id="records-list" class="message">記録を読み込み中…</div>
+  </section>
+</main>
+
+<script type="module">
+  import {
+    initializeApp,
+    getApps
+  } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+
+  import {
+    getAuth,
+    onAuthStateChanged,
+    signOut
+  } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+
+  import {
+    getFirestore,
+    collection,
+    getDocs
+  } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCm2ZekCOLi-JceUCcdDW5FyCdtSwh_ZJU",
+    authDomain: "kakeibo-94245.firebaseapp.com",
+    projectId: "kakeibo-94245",
+    storageBucket: "kakeibo-94245.firebasestorage.app",
+    messagingSenderId: "543784840442",
+    appId: "1:543784840442:web:ff3fc3d96d417590952d43"
+  };
+
+  const app = getApps().length
+    ? getApps()[0]
+    : initializeApp(firebaseConfig);
+
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  const monthSelect = document.getElementById("month-select");
+  const totalElement = document.getElementById("monthly-total");
+  const countElement = document.getElementById("record-count");
+  const listElement = document.getElementById("records-list");
+
+  let allRecords = [];
+
+  const yen = amount =>
+    Number(amount || 0).toLocaleString("ja-JP") + " 円";
+
+  function renderRecords() {
+    const selectedMonth = monthSelect.value;
+
+    const monthlyRecords = allRecords
+      .filter(record =>
+        typeof record.date === "string" &&
+        record.date.slice(0, 7) === selectedMonth
+      )
+      .sort((a, b) => b.date.localeCompare(a.date));
+
+    const total = monthlyRecords.reduce(
+      (sum, record) => sum + Number(record.amount || 0),
+      0
+    );
+
+    totalElement.textContent = yen(total);
+    countElement.textContent = monthlyRecords.length + " 件の記録";
+
+    listElement.replaceChildren();
+
+    if (monthlyRecords.length === 0) {
+      listElement.textContent = "この月の支出記録はありません。";
+      listElement.className = "message";
+      return;
+    }
+
+    listElement.className = "";
+
+    monthlyRecords.forEach(record => {
+      const card = document.createElement("article");
+      card.className = "record";
+
+      const top = document.createElement("div");
+      top.className = "record-top";
+
+      const item = document.createElement("div");
+      item.className = "record-item";
+      item.textContent = record.item || "項目なし";
+
+      const amount = document.createElement("div");
+      amount.className = "record-amount";
+      amount.textContent = yen(record.amount);
+
+      top.append(item, amount);
+
+      const meta = document.createElement("div");
+      meta.className = "record-meta";
+      meta.textContent =
+        (record.date || "日付なし") + " ・ " +
+        (record.category || "分類なし");
+
+      card.append(top, meta);
+
+      if (record.memo) {
+        const memo = document.createElement("div");
+        memo.className = "record-memo";
+        memo.textContent = "メモ：" + record.memo;
+        card.append(memo);
+      }
+
+      listElement.append(card);
+    });
+  }
+
+  function showError(message) {
+    listElement.textContent = message;
+    listElement.className = "message";
+    monthSelect.disabled = true;
+  }
+
+  monthSelect.addEventListener("change", renderRecords);
+
+  document.getElementById("logout-button")
+    .addEventListener("click", async () => {
+      try {
+        await signOut(auth);
+        window.location.href = "login.html";
+      } catch (error) {
+        alert("ログアウトに失敗しました。もう一度試してください。");
+      }
+    });
+
+  onAuthStateChanged(auth, async user => {
+    if (!user) {
+      window.location.href = "login.html";
+      return;
+    }
+
+    try {
+      listElement.textContent = "記録を読み込み中…";
+
+      const snapshot = await getDocs(collection(db, "records"));
+
+      allRecords = snapshot.docs.map(document => ({
+        id: document.id,
+        ...document.data()
+      }));
+
+      const months = [...new Set(
+        allRecords
+          .map(record =>
+            typeof record.date === "string"
+              ? record.date.slice(0, 7)
+              : ""
+          )
+          .filter(month => /^\d{4}-\d{2}$/.test(month))
+      )].sort((a, b) => b.localeCompare(a));
+
+      monthSelect.replaceChildren();
+
+      if (months.length === 0) {
+        monthSelect.add(new Option("記録がありません", ""));
+        monthSelect.disabled = true;
+        totalElement.textContent = yen(0);
+        countElement.textContent = "0 件の記録";
+        listElement.textContent = "まだ支出記録がありません。";
+        listElement.className = "message";
+        return;
+      }
+
+      months.forEach(month => {
+        const [year, monthNumber] = month.split("-");
+        monthSelect.add(new Option(
+          `${year}年${Number(monthNumber)}月`,
+          month
+        ));
+      });
+
+      const currentMonth = new Date().toISOString().slice(0, 7);
+      monthSelect.value = months.includes(currentMonth)
+        ? currentMonth
+        : months[0];
+
+      monthSelect.disabled = false;
+      renderRecords();
+
+    } catch (error) {
+      console.error(error);
+      showError("記録を読み込めませんでした。通信状態やFirebaseの設定を確認してください。");
+    }
+  });
+</script>
+</body>
+</html>
+
