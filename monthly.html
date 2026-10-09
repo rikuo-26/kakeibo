@@ -1,53 +1,448 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>月別集計</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>月別集計｜ふたりの暮らし</title>
+  <style>
+    :root {
+      --green: #557b63;
+      --green-dark: #355640;
+      --green-light: #e6eee5;
+      --ivory: #faf8f0;
+      --white: #ffffff;
+      --text: #34443a;
+      --muted: #748176;
+      --border: #dce4d9;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      background: var(--ivory);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+        "Noto Sans JP", sans-serif;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    header { margin-bottom: 22px; }
+
+    h1 {
+      margin: 0 0 8px;
+      color: var(--green-dark);
+      font-size: 27px;
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 18px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    nav a {
+      padding: 9px 13px;
+      border-radius: 10px;
+      background: var(--white);
+      color: var(--green-dark);
+      text-decoration: none;
+      font-size: 14px;
+      border: 1px solid var(--border);
+    }
+
+    nav a.active {
+      background: var(--green);
+      color: white;
+      border-color: var(--green);
+    }
+
+    .panel {
+      margin-bottom: 18px;
+      padding: 20px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+    }
+
+    .month-picker {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .month-picker button {
+      padding: 10px 15px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--green-light);
+      color: var(--green-dark);
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    #selected-month {
+      font-size: 21px;
+      font-weight: 700;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .summary-card {
+      padding: 16px;
+      border-radius: 13px;
+      background: var(--ivory);
+      min-width: 0;
+    }
+
+    .summary-label {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 9px;
+    }
+
+    .summary-value {
+      font-size: clamp(16px, 3vw, 23px);
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+
+    .income { color: var(--green-dark); }
+    .expense { color: #a45f48; }
+
+    .table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    th {
+      background: var(--ivory);
+      color: var(--green-dark);
+    }
+
+    td:last-child, th:last-child { text-align: right; }
+
+    .status {
+      padding: 12px;
+      border-radius: 10px;
+      background: var(--green-light);
+      color: var(--green-dark);
+      font-size: 14px;
+    }
+
+    .error {
+      background: #f9e8e4;
+      color: #8a3024;
+    }
+
+    .muted { color: var(--muted); }
+
+    @media (max-width: 560px) {
+      body { padding: 14px; }
+      .panel { padding: 15px; }
+      .summary-grid { grid-template-columns: 1fr; }
+      .summary-card { padding: 13px; }
+    }
+  </style>
 </head>
 <body>
-<nav>
-  <a href="index.html">入力</a> |
-  <a href="monthly.html">月別</a> |
-  <a href="weekly.html">週次</a> |
-  <a href="daily.html">日別</a> |
-  <a href="records.html">記録</a> |
-  <a href="settings.html">設定</a>
-</nav>
-<hr>
+<main>
+  <header>
+    <h1>ふたりの暮らし 🌿</h1>
+    <div class="subtitle">月別の家計簿</div>
+  </header>
 
-<h1>月別集計（年間）</h1>
+  <nav>
+    <a href="index.html">入力</a>
+    <a href="monthly.html" class="active">月別</a>
+    <a href="weekly.html">週次</a>
+    <a href="daily.html">日別</a>
+    <a href="records.html">記録</a>
+    <a href="settings.html">設定</a>
+  </nav>
 
-<!-- メニュー -->
-<a href="index.html">入力ページへ戻る</a>
-<hr>
+  <div id="status" class="status">ログイン状態を確認しています…</div>
 
-<div id="monthly-summary"></div>
+  <section id="app" hidden>
+    <div class="panel">
+      <div class="month-picker">
+        <button id="prev-month" type="button">← 前の月</button>
+        <div id="selected-month"></div>
+        <button id="next-month" type="button">次の月 →</button>
+      </div>
+    </div>
 
-<script>
-  // 保存されている支出データを読み込む
-  let records = JSON.parse(localStorage.getItem("records") || "[]");
+    <div class="panel">
+      <h2 id="summary-heading">月のまとめ</h2>
+      <div class="summary-grid">
+        <div class="summary-card">
+          <div class="summary-label">収入合計</div>
+          <div class="summary-value income" id="income-total">—</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">支出合計</div>
+          <div class="summary-value expense" id="expense-total">—</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">収支</div>
+          <div class="summary-value" id="balance-total">—</div>
+        </div>
+      </div>
+    </div>
 
-  function renderMonthlySummary() {
-    let monthly = Array(12).fill(0);
+    <div class="panel">
+      <h2>支出の内訳</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>カテゴリー</th><th>支出合計</th></tr>
+          </thead>
+          <tbody id="category-table"></tbody>
+          <tfoot>
+            <tr><th>合計</th><th id="category-total">0 円</th></tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
 
-    records.forEach(r => {
-      const month = new Date(r.date).getMonth(); // 0〜11
-      monthly[month] += r.amount;
-    });
+    <div class="panel">
+      <h2>年間の支出</h2>
+      <p class="subtitle">各月を選ぶと、その月の詳細に切り替わります。</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>月</th><th>支出</th></tr>
+          </thead>
+          <tbody id="annual-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>
 
-    let html = "<table border='1' cellpadding='5'><tr><th>月</th><th>支出</th></tr>";
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+  import {
+    getAuth,
+    onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+  import {
+    getFirestore,
+    collection,
+    getDocs,
+    doc,
+    getDoc
+  } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
-for (let i = 0; i < 12; i++) {
-  html += `<tr><td>${i + 1}月</td><td>${monthly[i]} 円</td></tr>`;
-}
+  const firebaseConfig = {
+    apiKey: "AIzaSyCm2ZekCOLi-JceUCcdDW5FyCdtSwh_ZJU",
+    authDomain: "kakeibo-94245.firebaseapp.com",
+    projectId: "kakeibo-94245",
+    storageBucket: "kakeibo-94245.firebasestorage.app",
+    messagingSenderId: "543784840442",
+    appId: "1:543784840442:web:ff3fc3d96d417590952d43"
+  };
 
-html += "</table>";
+  const appFirebase = initializeApp(firebaseConfig);
+  const auth = getAuth(appFirebase);
+  const db = getFirestore(appFirebase);
 
-    document.getElementById("monthly-summary").innerHTML = html;
+  const statusBox = document.getElementById("status");
+  const appSection = document.getElementById("app");
+
+  let records = [];
+  let income = { rikuto: 0, kaede: 0 };
+  let selectedDate = new Date();
+  selectedDate = new Date(
+    selectedDate.getFullYear(),
+    selectedDate.getMonth(),
+    1
+  );
+
+  const yen = value =>
+    Math.round(value).toLocaleString("ja-JP") + " 円";
+
+  function showError(message) {
+    statusBox.textContent = message;
+    statusBox.classList.add("error");
+    statusBox.hidden = false;
   }
 
-  renderMonthlySummary();
-</script>
+  function monthKey(year, monthIndex) {
+    return `${year}-${String(monthIndex + 1).padStart(2, "0")}`;
+  }
 
+  function recordMonth(record) {
+    if (typeof record.date !== "string") return "";
+    return record.date.slice(0, 7);
+  }
+
+  function getMonthlyRecords(year, monthIndex) {
+    const key = monthKey(year, monthIndex);
+    return records.filter(record => recordMonth(record) === key);
+  }
+
+  function totalFor(list) {
+    return list.reduce((sum, record) => {
+      const amount = Number(record.amount);
+      return sum + (Number.isFinite(amount) ? amount : 0);
+    }, 0);
+  }
+
+  function render() {
+    const year = selectedDate.getFullYear();
+    const monthIndex = selectedDate.getMonth();
+    const key = monthKey(year, monthIndex);
+    const monthRecords = getMonthlyRecords(year, monthIndex);
+
+    const expense = totalFor(monthRecords);
+    const incomeTotal =
+      (Number(income.rikuto) || 0) + (Number(income.kaede) || 0);
+
+    document.getElementById("selected-month").textContent =
+      `${year}年 ${monthIndex + 1}月`;
+    document.getElementById("summary-heading").textContent =
+      `${monthIndex + 1}月のまとめ`;
+
+    document.getElementById("income-total").textContent = yen(incomeTotal);
+    document.getElementById("expense-total").textContent = yen(expense);
+
+    const balance = incomeTotal - expense;
+    const balanceElement = document.getElementById("balance-total");
+    balanceElement.textContent = yen(balance);
+    balanceElement.className =
+      "summary-value " + (balance < 0 ? "expense" : "income");
+
+    const categories = ["固定費", "生活必需費", "自由費"];
+    document.getElementById("category-table").innerHTML =
+      categories.map(category => {
+        const categoryRecords = monthRecords.filter(
+          record => record.category === category
+        );
+        return `<tr><td>${category}</td><td>${yen(totalFor(categoryRecords))}</td></tr>`;
+      }).join("");
+
+    document.getElementById("category-total").textContent = yen(expense);
+
+    const annualTable = document.getElementById("annual-table");
+    annualTable.innerHTML = "";
+
+    for (let month = 0; month < 12; month++) {
+      const monthlyRecords = getMonthlyRecords(year, month);
+      const monthlyExpense = totalFor(monthlyRecords);
+      const row = document.createElement("tr");
+      const monthCell = document.createElement("td");
+      const button = document.createElement("button");
+
+      button.type = "button";
+      button.textContent = `${month + 1}月`;
+      button.style.cssText =
+        "border:0;background:none;color:#355640;text-decoration:underline;cursor:pointer;font:inherit;";
+      button.addEventListener("click", () => {
+        selectedDate = new Date(year, month, 1);
+        render();
+      });
+
+      monthCell.appendChild(button);
+
+      const amountCell = document.createElement("td");
+      amountCell.textContent = yen(monthlyExpense);
+      row.append(monthCell, amountCell);
+      annualTable.appendChild(row);
+    }
+  }
+
+  document.getElementById("prev-month").addEventListener("click", () => {
+    selectedDate = new Date(
+      selectedDate.getFullYear(),
+      selectedDate.getMonth() - 1,
+      1
+    );
+    render();
+  });
+
+  document.getElementById("next-month").addEventListener("click", () => {
+    selectedDate = new Date(
+      selectedDate.getFullYear(),
+      selectedDate.getMonth() + 1,
+      1
+    );
+    render();
+  });
+
+  async function loadData() {
+    const recordsSnapshot = await getDocs(collection(db, "records"));
+    records = recordsSnapshot.docs.map(item => ({
+      id: item.id,
+      ...item.data()
+    }));
+
+    const incomeSnapshot = await getDoc(doc(db, "settings", "income"));
+    if (incomeSnapshot.exists()) {
+      const savedIncome = incomeSnapshot.data();
+      income = {
+        rikuto: Number(savedIncome.rikuto) || 0,
+        kaede: Number(savedIncome.kaede) || 0
+      };
+    }
+
+    statusBox.hidden = true;
+    appSection.hidden = false;
+    render();
+  }
+
+  onAuthStateChanged(auth, async user => {
+    if (!user) {
+      window.location.replace("login.html");
+      return;
+    }
+
+    statusBox.classList.remove("error");
+    statusBox.textContent = "家計簿データを読み込んでいます…";
+    statusBox.hidden = false;
+
+    try {
+      await loadData();
+    } catch (error) {
+      console.error("月別データ読み込みエラー:", error);
+      showError(
+        "データを読み込めませんでした。Firestoreのルールと接続状態を確認してください。"
+      );
+    }
+  });
+</script>
 </body>
 </html>
