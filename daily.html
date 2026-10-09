@@ -1,160 +1,577 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
- <meta charset="UTF-8">
-  <title>日別集計</title>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<head>
-<style>
-
-/* スマホ対応（画面幅600px以下） */
-@media (max-width: 600px) {
-
-    body {
-        padding: 10px;
-        font-size: 16px;
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>日別集計｜ふたりの暮らし</title>
+  <style>
+    :root {
+      --green: #557b63;
+      --dark: #355640;
+      --light: #e6eee5;
+      --ivory: #faf8f0;
+      --white: #fff;
+      --text: #34443a;
+      --muted: #748176;
+      --border: #dce4d9;
+      --red: #a45f48;
     }
 
-    input, select, textarea {
-        width: 100%;
-        font-size: 18px;
-        padding: 10px;
-        margin-bottom: 12px;
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      background: var(--ivory);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+        "Noto Sans JP", sans-serif;
+    }
+
+    main { max-width: 1000px; margin: 0 auto; }
+
+    header { margin-bottom: 22px; }
+
+    h1 {
+      margin: 0 0 8px;
+      color: var(--dark);
+      font-size: 27px;
+    }
+
+    h2 { margin: 0 0 14px; font-size: 18px; }
+
+    .subtitle { color: var(--muted); font-size: 13px; }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    nav a {
+      padding: 9px 13px;
+      border-radius: 10px;
+      background: var(--white);
+      color: var(--dark);
+      text-decoration: none;
+      font-size: 14px;
+      border: 1px solid var(--border);
+    }
+
+    nav a.active {
+      background: var(--green);
+      color: white;
+      border-color: var(--green);
+    }
+
+    .panel {
+      margin-bottom: 18px;
+      padding: 20px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+    }
+
+    .month-picker {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
     }
 
     button {
-        width: 100%;
-        padding: 14px;
-        font-size: 18px;
-        margin-top: 10px;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--light);
+      color: var(--dark);
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    #month-label { font-weight: 700; font-size: 21px; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .stat {
+      padding: 15px;
+      background: var(--ivory);
+      border-radius: 12px;
+      min-width: 0;
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: clamp(17px, 3vw, 23px);
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 5px;
+    }
+
+    .weekday {
+      text-align: center;
+      padding: 8px 0;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .day {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 7px;
+      min-width: 0;
+      min-height: 83px;
+      padding: 8px 2px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--white);
+      color: var(--text);
+    }
+
+    .day:disabled {
+      background: transparent;
+      border-color: transparent;
+      cursor: default;
+    }
+
+    .day.has-expense { background: var(--light); }
+
+    .day.selected {
+      border: 2px solid var(--green);
+      background: #d5e5d5;
+    }
+
+    .day-number { font-weight: 700; }
+
+    .day-amount {
+      font-size: 11px;
+      line-height: 1.3;
+      overflow-wrap: anywhere;
+    }
+
+    .day.has-expense .day-amount {
+      color: var(--dark);
+      font-weight: 700;
+    }
+
+    .empty {
+      padding: 18px 10px;
+      text-align: center;
+      color: var(--muted);
+      background: var(--ivory);
+      border-radius: 10px;
     }
 
     .record {
-        padding: 12px;
-        margin-bottom: 12px;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        font-size: 16px;
+      padding: 13px 0;
+      border-bottom: 1px solid var(--border);
     }
 
-    table {
-        width: 100%;
-        font-size: 16px;
+    .record:last-child { border-bottom: 0; }
+
+    .record-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
     }
 
-    #daily-summary, #calendar {
-        overflow-x: auto;
+    .record-name { font-weight: 700; overflow-wrap: anywhere; }
+    .record-amount { font-weight: 700; color: var(--red); white-space: nowrap; }
+    .record-meta { color: var(--muted); font-size: 13px; margin-top: 5px; }
+    .record-memo { margin-top: 5px; font-size: 13px; overflow-wrap: anywhere; }
+
+    .status {
+      padding: 12px;
+      border-radius: 10px;
+      background: var(--light);
+      color: var(--dark);
+      font-size: 14px;
     }
-}
 
-</style>
-</head>
+    .error { background: #f9e8e4; color: #8a3024; }
 
+    @media (max-width: 600px) {
+      body { padding: 12px; }
+      .panel { padding: 13px; }
+      .stats { grid-template-columns: 1fr; }
+      .day { min-height: 66px; gap: 5px; }
+      .day-amount { font-size: 10px; }
+      .month-picker { gap: 6px; }
+      .month-picker button { padding: 9px 8px; font-size: 12px; }
+      #month-label { font-size: 18px; }
+    }
+  </style>
 </head>
 <body>
+<main>
+  <header>
+    <h1>ふたりの暮らし 🌿</h1>
+    <div class="subtitle">カレンダーから毎日の支出を確認</div>
+  </header>
 
-<nav>
-  <a href="index.html">入力</a> |
-  <a href="monthly.html">月別</a> |
-  <a href="weekly.html">週次</a> |
-  <a href="daily.html">日別</a> |
-  <a href="records.html">記録</a> |
-  <a href="settings.html">設定</a>
-</nav>
-<hr>
-<h1>日別集計</h1>
-<div id="daily-summary"></div>
+  <nav>
+    <a href="index.html">入力</a>
+    <a href="monthly.html">月別</a>
+    <a href="weekly.html">週次</a>
+    <a href="daily.html" class="active">日別</a>
+    <a href="records.html">記録</a>
+    <a href="settings.html">設定</a>
+  </nav>
 
-<h2>日別の統計</h2>
-<div id="daily-stats"></div>
+  <div id="status" class="status">ログイン状態を確認しています…</div>
 
-<h2>日別グラフ</h2>
-<canvas id="dailyChart"></canvas>
+  <section id="app" hidden>
+    <div class="panel">
+      <div class="month-picker">
+        <button id="prev-month" type="button">← 前の月</button>
+        <div id="month-label"></div>
+        <button id="next-month" type="button">次の月 →</button>
+      </div>
+    </div>
 
-<h2>カレンダー表示</h2>
-<div id="calendar"></div>
+    <div class="panel">
+      <h2>月の統計</h2>
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-label">月間支出</div>
+          <div class="stat-value" id="month-total">0 円</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">支出があった日数</div>
+          <div class="stat-value" id="active-days">0 日</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">支出があった日の平均</div>
+          <div class="stat-value" id="average-total">0 円</div>
+        </div>
+      </div>
+      <p class="subtitle">カレンダーの日付を押すと、その日の支出を確認できます。</p>
+    </div>
 
-<script>
-  let daily = {};   //
-  let records = JSON.parse(localStorage.getItem("kakeibo") || "[]");
- function renderDailyStats(daily) {
-  const days = Object.keys(daily);
-  const total = days.reduce((sum, d) => sum + daily[d], 0);
-  const avg = Math.round(total / days.length);
-  const maxDay = days.reduce((a, b) => daily[a] > daily[b] ? a : b);
+    <div class="panel">
+      <h2>カレンダー</h2>
+      <div id="calendar" class="calendar"></div>
+    </div>
 
-  let html = `
-    <p>合計：${total} 円</p>
-    <p>平均：${avg} 円</p>
-    <p>最大支出日：${maxDay}（${daily[maxDay]} 円）</p>
-  `;
+    <div class="panel">
+      <h2 id="selected-heading">選択した日の支出</h2>
+      <div class="stats" style="grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:16px;">
+        <div class="stat">
+          <div class="stat-label">支出合計</div>
+          <div class="stat-value" id="day-total">0 円</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">支出件数</div>
+          <div class="stat-value" id="day-count">0 件</div>
+        </div>
+      </div>
+      <div id="day-records"></div>
+    </div>
+  </section>
+</main>
 
-  document.getElementById("daily-stats").innerHTML = html;
-}
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+  import {
+    getAuth,
+    onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+  import {
+    getFirestore,
+    collection,
+    getDocs
+  } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
-  function formatDate(d) {
-    const date = new Date(d);
+  const firebaseConfig = {
+    apiKey: "AIzaSyCm2ZekCOLi-JceUCcdDW5FyCdtSwh_ZJU",
+    authDomain: "kakeibo-94245.firebaseapp.com",
+    projectId: "kakeibo-94245",
+    storageBucket: "kakeibo-94245.firebasestorage.app",
+    messagingSenderId: "543784840442",
+    appId: "1:543784840442:web:ff3fc3d96d417590952d43"
+  };
+
+  const firebaseApp = initializeApp(firebaseConfig);
+  const auth = getAuth(firebaseApp);
+  const db = getFirestore(firebaseApp);
+
+  const statusBox = document.getElementById("status");
+  const appSection = document.getElementById("app");
+
+  let records = [];
+  const today = new Date();
+  let selectedMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  let selectedDay = dateKey(today);
+
+  function dateKey(date) {
     const y = date.getFullYear();
-    const m = ("0" + (date.getMonth() + 1)).slice(-2);
-    const day = ("0" + date.getDate()).slice(-2);
-    return `${y}-${m}-${day}`;
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
   }
 
-  function renderDailySummary() {
-     daily = {};
+  function yen(value) {
+    return Math.round(value).toLocaleString("ja-JP") + " 円";
+  }
 
-    records.forEach(r => {
-      const day = formatDate(r.date);
-      if (!daily[day]) daily[day] = 0;
-      daily[day] += r.amount;
+  function safeText(value) {
+    return String(value ?? "");
+  }
+
+  function totalFor(list) {
+    return list.reduce((sum, record) => {
+      const amount = Number(record.amount);
+      return sum + (Number.isFinite(amount) ? amount : 0);
+    }, 0);
+  }
+
+  function recordsForDay(key) {
+    return records.filter(record => record.date === key);
+  }
+
+  function recordsForMonth() {
+    const prefix =
+      `${selectedMonth.getFullYear()}-${String(selectedMonth.getMonth() + 1).padStart(2, "0")}`;
+    return records.filter(record =>
+      typeof record.date === "string" && record.date.startsWith(prefix)
+    );
+  }
+
+  function renderStats() {
+    const monthRecords = recordsForMonth();
+    const total = totalFor(monthRecords);
+    const activeDays = new Set(
+      monthRecords
+        .filter(record => Number(record.amount) > 0)
+        .map(record => record.date)
+    ).size;
+
+    document.getElementById("month-total").textContent = yen(total);
+    document.getElementById("active-days").textContent = `${activeDays} 日`;
+    document.getElementById("average-total").textContent =
+      yen(activeDays ? total / activeDays : 0);
+  }
+
+  function renderCalendar() {
+    const year = selectedMonth.getFullYear();
+    const month = selectedMonth.getMonth();
+    const firstWeekday = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const monthRecords = recordsForMonth();
+
+    const totals = {};
+    monthRecords.forEach(record => {
+      const amount = Number(record.amount);
+      if (!Number.isFinite(amount)) return;
+      totals[record.date] = (totals[record.date] || 0) + amount;
     });
 
-    let html = "<table border='1' cellpadding='5'><tr><th>日付</th><th>支出</th></tr>";
+    document.getElementById("month-label").textContent =
+      `${year}年 ${month + 1}月`;
 
-    for (let day in daily) {
-      html += `<tr><td>${day}</td><td>${daily[day]} 円</td></tr>`;
+    const calendar = document.getElementById("calendar");
+    calendar.innerHTML = "";
+
+    ["日", "月", "火", "水", "木", "金", "土"].forEach(day => {
+      const label = document.createElement("div");
+      label.className = "weekday";
+      label.textContent = day;
+      calendar.appendChild(label);
+    });
+
+    for (let i = 0; i < firstWeekday; i++) {
+      const blank = document.createElement("div");
+      calendar.appendChild(blank);
     }
 
-    html += "</table>";
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(year, month, day);
+      const key = dateKey(date);
+      const total = totals[key] || 0;
+      const button = document.createElement("button");
 
-    document.getElementById("daily-summary").innerHTML = html;
+      button.type = "button";
+      button.className = "day";
+      if (total > 0) button.classList.add("has-expense");
+      if (key === selectedDay) button.classList.add("selected");
+
+      const number = document.createElement("span");
+      number.className = "day-number";
+      number.textContent = day;
+      button.appendChild(number);
+
+      const amount = document.createElement("span");
+      amount.className = "day-amount";
+      amount.textContent = total > 0
+        ? `${Math.round(total).toLocaleString("ja-JP")}円`
+        : "—";
+      button.appendChild(amount);
+
+      button.setAttribute("aria-label",
+        `${year}年${month + 1}月${day}日、支出${yen(total)}`);
+
+      button.addEventListener("click", () => {
+        selectedDay = key;
+        renderCalendar();
+        renderSelectedDay();
+      });
+
+      calendar.appendChild(button);
+    }
   }
-function renderDailyChart(daily) {
-    const ctx = document.getElementById("dailyChart").getContext("2d");
 
-    new Chart(ctx, {
-        type: "bar",
-        data: {
-            labels: Object.keys(daily),
-            datasets: [{
-                label: "日別支出",
-                data: Object.values(daily),
-                backgroundColor: "rgba(75, 192, 192, 0.6)"
-            }]
-        }
+  function renderSelectedDay() {
+    const date = new Date(`${selectedDay}T12:00:00`);
+    const list = recordsForDay(selectedDay);
+    const total = totalFor(list);
+
+    document.getElementById("selected-heading").textContent =
+      `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日の支出`;
+    document.getElementById("day-total").textContent = yen(total);
+    document.getElementById("day-count").textContent = `${list.length} 件`;
+
+    const container = document.getElementById("day-records");
+    container.innerHTML = "";
+
+    if (list.length === 0) {
+      container.innerHTML = '<div class="empty">この日の支出はありません。</div>';
+      return;
+    }
+
+    list.sort((a, b) =>
+      safeText(a.item).localeCompare(safeText(b.item), "ja")
+    );
+
+    list.forEach(record => {
+      const article = document.createElement("div");
+      article.className = "record";
+
+      const top = document.createElement("div");
+      top.className = "record-top";
+
+      const name = document.createElement("div");
+      name.className = "record-name";
+      name.textContent = safeText(record.item) || "（項目なし）";
+
+      const amount = document.createElement("div");
+      amount.className = "record-amount";
+      amount.textContent = yen(Number(record.amount) || 0);
+
+      top.append(name, amount);
+      article.appendChild(top);
+
+      const meta = document.createElement("div");
+      meta.className = "record-meta";
+      meta.textContent = safeText(record.category) || "カテゴリー未設定";
+      article.appendChild(meta);
+
+      if (record.memo) {
+        const memo = document.createElement("div");
+        memo.className = "record-memo";
+        memo.textContent = `メモ：${safeText(record.memo)}`;
+        article.appendChild(memo);
+      }
+
+      container.appendChild(article);
     });
-}
-function renderCalendar(daily) {
-    let html = "<table border='1' cellpadding='5'><tr>";
+  }
 
-    const days = Object.keys(daily);
+  function render() {
+    renderStats();
+    renderCalendar();
+    renderSelectedDay();
+  }
 
-    days.forEach(day => {
-        html += `<td>${day}<br>${daily[day]}円</td>`;
-    });
+  document.getElementById("prev-month").addEventListener("click", () => {
+    selectedMonth = new Date(
+      selectedMonth.getFullYear(),
+      selectedMonth.getMonth() - 1,
+      1
+    );
 
-    html += "</tr></table>";
+    const lastDay = new Date(
+      selectedMonth.getFullYear(),
+      selectedMonth.getMonth() + 1,
+      0
+    ).getDate();
 
-    document.getElementById("calendar").innerHTML = html;
-}
+    const selectedDate = new Date(`${selectedDay}T12:00:00`);
+    selectedDay = dateKey(new Date(
+      selectedMonth.getFullYear(),
+      selectedMonth.getMonth(),
+      Math.min(selectedDate.getDate(), lastDay)
+    ));
+    render();
+  });
 
-  renderDailySummary();
-  renderDailyStats(daily);
-  renderDailyChart(daily);
-  renderCalendar(daily);
+  document.getElementById("next-month").addEventListener("click", () => {
+    selectedMonth = new Date(
+      selectedMonth.getFullYear(),
+      selectedMonth.getMonth() + 1,
+      1
+    );
 
+    const selectedDate = new Date(`${selectedDay}T12:00:00`);
+    const lastDay = new Date(
+      selectedMonth.getFullYear(),
+      selectedMonth.getMonth() + 1,
+      0
+    ).getDate();
+
+    selectedDay = dateKey(new Date(
+      selectedMonth.getFullYear(),
+      selectedMonth.getMonth(),
+      Math.min(selectedDate.getDate(), lastDay)
+    ));
+    render();
+  });
+
+  onAuthStateChanged(auth, async user => {
+    if (!user) {
+      window.location.replace("login.html");
+      return;
+    }
+
+    statusBox.textContent = "家計簿データを読み込んでいます…";
+    statusBox.classList.remove("error");
+
+    try {
+      const snapshot = await getDocs(collection(db, "records"));
+      records = snapshot.docs.map(item => ({
+        id: item.id,
+        ...item.data()
+      }));
+
+      statusBox.hidden = true;
+      appSection.hidden = false;
+      render();
+    } catch (error) {
+      console.error("日別データ読み込みエラー:", error);
+      statusBox.textContent =
+        "データを読み込めませんでした。Firestoreのルールと接続状態を確認してください。";
+      statusBox.classList.add("error");
+    }
+  });
 </script>
-
 </body>
 </html>
