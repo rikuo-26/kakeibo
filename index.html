@@ -337,9 +337,16 @@ async function editRecord(i) {
     // 一覧更新
     render();
 }
-  async function deleteRecord(i) {
-  const r = records[i];
+async function deleteRecord(i) {
+ async function editRecord(i) {
+  if (!window.firebaseAuth.currentUser) {
+    alert("先にログインしてください。");
+    return;
+  }
 
+  const r = records[i];
+  editingRecordId = r.id;
+  const r = records[i];
   if (!confirm("この支出を削除しますか？")) {
     return;
   }
