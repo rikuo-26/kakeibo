@@ -1069,6 +1069,44 @@ onAuthStateChanged(auth, async user => {
     );
   }
 });
+
+function showNotice(title, message) {
+  const modal = $("notice-modal");
+  const titleElement = $("notice-modal-title");
+  const messageElement = $("notice-modal-message");
+  const closeButton = $("notice-close-button");
+
+  if (!modal || !titleElement || !messageElement || !closeButton) {
+    alert(message);
+    return;
+  }
+
+  titleElement.textContent = title;
+  messageElement.textContent = message;
+  modal.hidden = false;
+
+  function closeNotice() {
+    modal.hidden = true;
+    closeButton.removeEventListener("click", closeNotice);
+    modal.removeEventListener("click", closeBackdrop);
+    document.removeEventListener("keydown", closeEscape);
+  }
+
+  function closeBackdrop(event) {
+    if (event.target === modal) closeNotice();
+  }
+
+  function closeEscape(event) {
+    if (event.key === "Escape") closeNotice();
+  }
+
+  closeButton.addEventListener("click", closeNotice);
+  modal.addEventListener("click", closeBackdrop);
+  document.addEventListener("keydown", closeEscape);
+
+  closeButton.focus();
+}
+
 </script>
 
 
@@ -1092,8 +1130,20 @@ onAuthStateChanged(auth, async user => {
   </div>
 </div>
 
-</body>
-</html>
+<!-- 操作完了メッセージ -->
+<div id="notice-modal" class="modal-overlay" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true"
+       aria-labelledby="notice-modal-title">
+    <div class="modal-icon">✓</div>
+    <h2 id="notice-modal-title">削除しました！</h2>
+    <p id="notice-modal-message">支出一覧を更新しました。</p>
+    <div class="modal-actions">
+      <button type="button" id="notice-close-button" class="modal-cancel">
+        OK
+      </button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
