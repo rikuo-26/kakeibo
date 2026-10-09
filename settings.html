@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>設定｜ふたりの暮らし</title>
 <style>
+  
 :root {
   --green: #58785b;
   --green-dark: #3f6045;
@@ -20,7 +21,7 @@
 * { box-sizing: border-box; }
 body {
   margin: 0;
-  padding: 20px;
+  padding: 20px 20px 105px;
   font-family: sans-serif;
   color: var(--text);
   background: var(--ivory);
@@ -105,24 +106,77 @@ button {
   margin: 14px 0;
 }
 #app[hidden], #status[hidden] { display: none; }
+
+/* 画面下部に固定する共通メニュー */
+.bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  padding: 9px 6px calc(9px + env(safe-area-inset-bottom));
+  background: var(--white);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -3px 14px #354b3510;
+}
+.bottom-nav a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-width: 0;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.bottom-nav a .nav-icon { font-size: 20px; }
+.bottom-nav a.current {
+  color: var(--green-dark);
+  font-weight: bold;
+}
+.bottom-nav a.current .nav-icon {
+  background: var(--green-light);
+  border-radius: 12px;
+  padding: 2px 12px;
+}
 @media (max-width: 480px) {
-  body { padding: 14px; }
+  body { padding: 14px 14px 105px; }
   .card { padding: 16px; }
   h1 { font-size: 23px; }
-  nav { gap: 8px 11px; }
+  .bottom-nav a { font-size: 10px; }
 }
+
 </style>
 </head>
 <body>
 <main>
-  <nav>
-    <a href="index.html">入力</a>
-    <a href="monthly.html">月別</a>
-    <a href="weekly.html">週次</a>
-    <a href="daily.html">日別</a>
-    <a href="records.html">記録</a>
-    <a href="settings.html" class="current">設定</a>
-  </nav>
+
+<nav class="bottom-nav" aria-label="メインメニュー">
+  <a href="index.html">
+    <span class="nav-icon">✚</span>
+    <span>入力</span>
+  </a>
+  <a href="monthly.html">
+    <span class="nav-icon">▦</span>
+    <span>月別</span>
+  </a>
+  <a href="weekly.html">
+    <span class="nav-icon">▤</span>
+    <span>週次</span>
+  </a>
+  <a href="daily.html">
+    <span class="nav-icon">▣</span>
+    <span>日別</span>
+  </a>
+  <a href="settings.html" class="current" aria-current="page">
+    <span class="nav-icon">⚙</span>
+    <span>設定</span>
+  </a>
+</nav>
 
   <h1>ふたりの暮らし設定</h1>
   <p class="subtitle">収入や支出カテゴリを管理しよう。</p>
