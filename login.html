@@ -6,26 +6,91 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>家計簿ログイン</title>
  ```html
+```html
 <style>
+  * {
+    box-sizing: border-box;
+  }
+
   body {
     font-family: sans-serif;
     max-width: 500px;
-    margin: 40px auto;
-    padding: 20px;
-    box-sizing: border-box;
+    margin: 0 auto;
+    padding: 32px 20px;
+    min-height: 100vh;
     background: #f3f0e6;
+    color: #304b38;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .login-card {
+    width: 100%;
+    background: #fffdf7;
+    border: 1px solid #e3e2d5;
+    border-radius: 20px;
+    padding: 28px 24px;
+    box-shadow: 0 8px 24px rgba(48, 75, 56, 0.08);
+  }
+
+  .login-header {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+
+  .home-icon {
+    width: 68px;
+    height: 68px;
+    margin: 0 auto 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #dce7d5;
+    color: #42634b;
+    border-radius: 20px;
+    font-size: 42px;
+  }
+
+  .login-header h1 {
+    margin: 0 0 8px;
+    font-size: 28px;
     color: #304b38;
   }
 
+  .login-header p {
+    margin: 0;
+    color: #71816b;
+    font-size: 14px;
+  }
+
+  .login-form h2 {
+    margin: 0 0 8px;
+    font-size: 21px;
+  }
+
+  .login-description {
+    margin: 0 0 24px;
+    color: #7b8273;
+    font-size: 14px;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 6px;
+    color: #52624f;
+    font-size: 14px;
+    font-weight: bold;
+  }
+
   input {
-    box-sizing: border-box;
     width: 100%;
-    padding: 12px;
-    margin: 8px 0 16px;
+    padding: 13px;
+    margin: 0 0 18px;
     font-size: 16px;
     border: 1px solid #d9ded1;
     border-radius: 8px;
-    background: #fffdf7;
+    background: #ffffff;
     color: #304b38;
   }
 
@@ -54,18 +119,36 @@
     cursor: not-allowed;
   }
 
-  label {
-    font-size: 14px;
-    font-weight: bold;
-    color: #52624f;
-  }
-
   #login-message {
     overflow-wrap: anywhere;
     font-size: 14px;
     line-height: 1.6;
   }
+
+  .security-note {
+    margin: 22px 0 0;
+    padding: 12px;
+    background: #eff3e9;
+    border-radius: 8px;
+    color: #52624f;
+    font-size: 12px;
+    text-align: center;
+  }
+
+  .footer-note {
+    margin: 22px 0 0;
+    text-align: center;
+    color: #71816b;
+    font-size: 13px;
+  }
+
+  @media (max-width: 380px) {
+    .login-card {
+      padding: 24px 18px;
+    }
+  }
 </style>
+```
 </head>
 ```html
 <body>
