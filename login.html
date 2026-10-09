@@ -48,8 +48,72 @@
   <button id="login-button">ログイン</button>
   <p id="login-message"></p>
 
-  <script type="module">
-    // 次のステップでログイン処理を追加する
-  </script>
+
+<script type="module">
+  import {
+    initializeApp,
+    getApps
+  } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+
+  import {
+    getAuth,
+    signInWithEmailAndPassword,
+    setPersistence,
+    browserLocalPersistence,
+    onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCm2ZekCOLi-JceUCcdDW5FyCdtSwh_ZJU",
+    authDomain: "kakeibo-94245.firebaseapp.com",
+    projectId: "kakeibo-94245",
+    storageBucket: "kakeibo-94245.firebasestorage.app",
+    messagingSenderId: "543784840442",
+    appId: "1:543784840442:web:ff3fc3d96d417590952d43"
+  };
+
+  const app = getApps().length
+    ? getApps()[0]
+    : initializeApp(firebaseConfig);
+
+  const auth = getAuth(app);
+
+  const loginButton = document.getElementById("login-button");
+  const message = document.getElementById("login-message");
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      window.location.href = "index.html";
+    }
+  });
+
+  loginButton.addEventListener("click", async () => {
+    const email = document.getElementById("login-email").value.trim();
+    const password = document.getElementById("login-password").value;
+
+    if (!email || !password) {
+      message.textContent = "メールアドレスとパスワードを入力してください。";
+      return;
+    }
+
+    loginButton.disabled = true;
+    message.textContent = "ログイン中です…";
+
+    try {
+      await setPersistence(auth, browserLocalPersistence);
+      await signInWithEmailAndPassword(auth, email, password);
+      message.textContent = "ログインしました。";
+      window.location.href = "index.html";
+    } catch (error) {
+      console.error(error);
+      message.textContent = "ログインできませんでした。入力内容を確認してください。";
+    } finally {
+      loginButton.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>
+
 </body>
 </html>
