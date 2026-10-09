@@ -309,8 +309,10 @@ summary.innerHTML = `
       <strong>${r.category}　${r.item}　${r.amount.toLocaleString()} 円</strong><br>
       メモ: ${r.memo || ""}<br>
    <div style="display: flex; gap: 5px;">
-      <button onclick="editRecord(${index})" style="width: auto; padding: 2px 6px; font-size: 11px;">修正する</button>
-      <button onclick="deleteRecord(${index})" style="width: auto; padding: 2px 6px; font-size: 11px;">削除する</button>
+     
+<button onclick="editRecord(${index})" style="width: auto; padding: 2px 6px; font-size: 11px; color: blue;">修正する</button>
+<button onclick="deleteRecord(${index})" style="width: auto; padding: 2px 6px; font-size: 11px; color: red;">削除する</button>
+
 </div>
     `;
 
