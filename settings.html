@@ -1,59 +1,375 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>設定ページ</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>設定｜ふたりの暮らし</title>
+<style>
+:root {
+  --green: #58785b;
+  --green-dark: #3f6045;
+  --green-light: #e7eee3;
+  --ivory: #faf8f0;
+  --white: #fffefb;
+  --text: #343b32;
+  --muted: #788073;
+  --border: #e2e5d9;
+  --danger: #b85c50;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 20px;
+  font-family: sans-serif;
+  color: var(--text);
+  background: var(--ivory);
+  line-height: 1.6;
+}
+main { max-width: 680px; margin: 0 auto; }
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+nav a { color: var(--green-dark); text-decoration: none; }
+nav a.current { font-weight: bold; text-decoration: underline; }
+h1 { font-size: 25px; margin: 18px 0 4px; }
+.subtitle { color: var(--muted); margin: 0 0 22px; font-size: 14px; }
+.card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  margin: 18px 0;
+  box-shadow: 0 3px 12px #354b3510;
+}
+h2 { font-size: 19px; margin: 0 0 14px; }
+label { display: block; font-size: 14px; margin: 12px 0 5px; }
+input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: white;
+  font-size: 16px;
+}
+button {
+  border: 0;
+  border-radius: 9px;
+  padding: 11px 15px;
+  font-size: 15px;
+  cursor: pointer;
+}
+.primary {
+  background: var(--green);
+  color: white;
+  width: 100%;
+  margin-top: 16px;
+  font-weight: bold;
+}
+.primary:disabled { opacity: .55; cursor: wait; }
+.category-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--border);
+}
+.category-row:last-child { border-bottom: 0; }
+.category-name { overflow-wrap: anywhere; }
+.delete {
+  background: #f8eae6;
+  color: var(--danger);
+  flex-shrink: 0;
+  padding: 7px 10px;
+}
+.add-row { display: flex; gap: 8px; margin-top: 14px; }
+.add-row input { min-width: 0; }
+.add-button {
+  background: var(--green-light);
+  color: var(--green-dark);
+  font-weight: bold;
+  flex-shrink: 0;
+}
+.note { color: var(--muted); font-size: 13px; }
+#status {
+  padding: 11px 13px;
+  border-radius: 9px;
+  background: var(--green-light);
+  font-size: 14px;
+  margin: 14px 0;
+}
+#app[hidden], #status[hidden] { display: none; }
+@media (max-width: 480px) {
+  body { padding: 14px; }
+  .card { padding: 16px; }
+  h1 { font-size: 23px; }
+  nav { gap: 8px 11px; }
+}
+</style>
 </head>
 <body>
+<main>
+  <nav>
+    <a href="index.html">入力</a>
+    <a href="monthly.html">月別</a>
+    <a href="weekly.html">週次</a>
+    <a href="daily.html">日別</a>
+    <a href="records.html">記録</a>
+    <a href="settings.html" class="current">設定</a>
+  </nav>
 
-<nav>
-  <a href="index.html">入力</a> |
-  <a href="monthly.html">月別</a> |
-  <a href="weekly.html">週次</a> |
-  <a href="daily.html">日別</a> |
-  <a href="records.html">記録</a> |
-  <a href="settings.html">設定</a>
-</nav>
-<hr>
+  <h1>ふたりの暮らし設定</h1>
+  <p class="subtitle">収入や支出カテゴリを管理しよう。</p>
 
-<h1>設定ページ</h1>
+  <p id="status" hidden></p>
 
-<h2>項目の追加</h2>
-<input type="text" id="new-category" placeholder="新しい項目名">
-<button onclick="addCategory()">追加</button>
+  <div id="app" hidden>
+    <section class="card">
+      <h2>💰 収入設定</h2>
+      <p class="note">毎月の収入を入力して保存してください。</p>
 
-<ul id="category-list"></ul>
+      <label for="income-rikuto">陸翔の収入（円）</label>
+      <input id="income-rikuto" type="number" min="0" step="1"
+             inputmode="numeric" placeholder="例：250000">
 
-<script>
-  // 項目リストを localStorage から読み込む
-  let categories = JSON.parse(localStorage.getItem("categories") || "[]");
+      <label for="income-kaede">楓の収入（円）</label>
+      <input id="income-kaede" type="number" min="0" step="1"
+             inputmode="numeric" placeholder="例：180000">
 
-  function renderCategories() {
-    let html = "";
-    categories.forEach((c, i) => {
-      html += `<li>${c} <button onclick="deleteCategory(${i})">削除</button></li>`;
+      <button class="primary" id="save-income">収入を保存する</button>
+    </section>
+
+    <section class="card">
+      <h2>🏷️ 支出カテゴリ設定</h2>
+      <p class="note">
+        カテゴリの追加・削除ができます。削除しても過去の支出記録は消えません。
+        入力ページとの連動は、ここでの動作確認後に行います。
+      </p>
+
+      <div id="category-list"></div>
+
+      <div class="add-row">
+        <input id="new-category" type="text" maxlength="30"
+               placeholder="新しいカテゴリ名">
+        <button class="add-button" id="add-category">追加</button>
+      </div>
+
+      <button class="primary" id="save-categories">
+        カテゴリを保存する
+      </button>
+    </section>
+  </div>
+</main>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+import {
+  getAuth, onAuthStateChanged, signOut
+} from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+import {
+  getFirestore, doc, getDoc, setDoc
+} from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCm2ZekCOLi-JceUCcdDW5FyCdtSwh_ZJU",
+  authDomain: "kakeibo-94245.firebaseapp.com",
+  projectId: "kakeibo-94245",
+  storageBucket: "kakeibo-94245.firebasestorage.app",
+  messagingSenderId: "543784840442",
+  appId: "1:543784840442:web:ff3fc3d96d417590952d43"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const defaultCategories = ["固定費", "生活必需費", "自由費"];
+let categories = [...defaultCategories];
+let categoryDocExists = false;
+
+const appElement = document.getElementById("app");
+const statusElement = document.getElementById("status");
+
+function showStatus(message) {
+  statusElement.textContent = message;
+  statusElement.hidden = false;
+}
+
+function hideStatus() {
+  statusElement.hidden = true;
+}
+
+function validAmount(value) {
+  return value !== "" &&
+    Number.isFinite(Number(value)) &&
+    Number(value) >= 0;
+}
+
+async function loadSettings() {
+  showStatus("設定を読み込んでいます…");
+
+  try {
+    const incomeSnap = await getDoc(doc(db, "settings", "income"));
+
+    if (incomeSnap.exists()) {
+      const data = incomeSnap.data();
+      document.getElementById("income-rikuto").value = data.rikuto ?? 0;
+      document.getElementById("income-kaede").value = data.kaede ?? 0;
+    } else {
+      document.getElementById("income-rikuto").value = 0;
+      document.getElementById("income-kaede").value = 0;
+    }
+
+    const categorySnap = await getDoc(doc(db, "settings", "categories"));
+
+    categoryDocExists = categorySnap.exists();
+
+    if (categoryDocExists) {
+      const data = categorySnap.data();
+      if (Array.isArray(data.categories)) {
+        categories = data.categories.filter(
+          item => typeof item === "string" && item.trim() !== ""
+        );
+      } else {
+        categories = [...defaultCategories];
+      }
+    } else {
+      // まだカテゴリ設定がない場合は既存のカテゴリを初期表示する。
+      // この時点ではFirestoreへ書き込まない。
+      categories = [...defaultCategories];
+    }
+
+    renderCategories();
+    hideStatus();
+    appElement.hidden = false;
+  } catch (error) {
+    console.error(error);
+    showStatus("設定の読み込みに失敗しました。ページを再読み込みしてください。");
+  }
+}
+
+document.getElementById("save-income").addEventListener("click", async () => {
+  const rikutoValue = document.getElementById("income-rikuto").value;
+  const kaedeValue = document.getElementById("income-kaede").value;
+
+  if (!validAmount(rikutoValue) || !validAmount(kaedeValue)) {
+    alert("収入は0以上の数値で入力してください。");
+    return;
+  }
+
+  const button = document.getElementById("save-income");
+  button.disabled = true;
+
+  try {
+    await setDoc(doc(db, "settings", "income"), {
+      rikuto: Number(rikutoValue),
+      kaede: Number(kaedeValue)
     });
-    document.getElementById("category-list").innerHTML = html;
+    showStatus("収入を保存しました！");
+  } catch (error) {
+    console.error(error);
+    showStatus("収入を保存できませんでした。通信やログイン状態を確認してください。");
+  } finally {
+    button.disabled = false;
+  }
+});
+
+function renderCategories() {
+  const list = document.getElementById("category-list");
+  list.replaceChildren();
+
+  if (categories.length === 0) {
+    const message = document.createElement("p");
+    message.className = "note";
+    message.textContent = "カテゴリがありません。下から追加してください。";
+    list.appendChild(message);
+    return;
   }
 
-  function addCategory() {
-    const name = document.getElementById("new-category").value.trim();
-    if (name === "") return;
+  categories.forEach((category, index) => {
+    const row = document.createElement("div");
+    row.className = "category-row";
 
-    categories.push(name);
-    localStorage.setItem("categories", JSON.stringify(categories));
-    document.getElementById("new-category").value = "";
-    renderCategories();
+    const name = document.createElement("span");
+    name.className = "category-name";
+    name.textContent = category;
+
+    const button = document.createElement("button");
+    button.className = "delete";
+    button.type = "button";
+    button.textContent = "削除";
+    button.addEventListener("click", () => {
+      if (!confirm(
+        `「${category}」をカテゴリ設定から削除しますか？\n過去の支出記録は削除されません。`
+      )) return;
+
+      categories.splice(index, 1);
+      renderCategories();
+    });
+
+    row.append(name, button);
+    list.appendChild(row);
+  });
+}
+
+document.getElementById("add-category").addEventListener("click", () => {
+  const input = document.getElementById("new-category");
+  const name = input.value.trim();
+
+  if (!name) {
+    alert("カテゴリ名を入力してください。");
+    return;
   }
 
-  function deleteCategory(index) {
-    categories.splice(index, 1);
-    localStorage.setItem("categories", JSON.stringify(categories));
-    renderCategories();
+  if (categories.includes(name)) {
+    alert("同じ名前のカテゴリがすでにあります。");
+    return;
   }
 
+  categories.push(name);
+  input.value = "";
   renderCategories();
-</script>
+});
 
+document.getElementById("new-category").addEventListener("keydown", event => {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    document.getElementById("add-category").click();
+  }
+});
+
+document.getElementById("save-categories").addEventListener("click", async () => {
+  const button = document.getElementById("save-categories");
+  button.disabled = true;
+
+  try {
+    await setDoc(doc(db, "settings", "categories"), {
+      categories: categories
+    });
+    categoryDocExists = true;
+    showStatus("カテゴリを保存しました！");
+  } catch (error) {
+    console.error(error);
+    showStatus("カテゴリを保存できませんでした。通信やログイン状態を確認してください。");
+  } finally {
+    button.disabled = false;
+  }
+});
+
+onAuthStateChanged(auth, user => {
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  loadSettings();
+});
+</script>
 </body>
 </html>
