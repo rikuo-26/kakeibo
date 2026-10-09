@@ -250,7 +250,11 @@ if (isEditing) {
   );
 
   r.id = editingRecordId;
-  records.push(r);
+  const index = records.findIndex(record => record.id === editingRecordId);
+  if (index !== -1) {
+    records[index] = r;
+  }
+  
 } else {
   const docRef = await window.firebaseAddDoc(
     window.firebaseCollection(window.firebaseDB, "records"),
@@ -327,6 +331,7 @@ summary.innerHTML = `
     details.appendChild(div);
   });
    renderSummary();
+  
 }
 
 async function editRecord(i) {
