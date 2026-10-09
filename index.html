@@ -906,7 +906,10 @@ async function addRecord() {
 
     clearExpenseForm();
     render();
-    alert(isEditing ? "支出を修正しました！" : "支出を追加しました！");
+    showNotice(
+  isEditing ? "更新しました！" : "追加しました！",
+  isEditing ? "支出の内容を更新しました。" : "支出を一覧に追加しました。"
+);
   } catch (error) {
     console.error("支出保存エラー:", error);
     alert("保存に失敗しました：" + error.message);
