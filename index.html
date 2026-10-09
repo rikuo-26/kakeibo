@@ -76,21 +76,7 @@
 <hr>
 
 <h2>スマホかんたん入力</h2>
-  <div id="login-area">
-  <h3>ログイン</h3>
-
-  <input type="email" id="login-email" placeholder="メールアドレス">
-  <br><br>
-
-  <input type="password" id="login-password" placeholder="パスワード">
-  <br><br>
-
-  <button id="login-button">ログイン</button>
-
-  <p id="login-message"></p>
-</div>
-<hr>
-
+ 
 <h2>収入入力</h2>
 
 <label>陸翔の収入</label>
@@ -408,10 +394,12 @@ import { getAuth, signInWithEmailAndPassword, setPersistence, browserLocalPersis
 
   const auth = getAuth();
     
-   onAuthStateChanged(auth, (user) => {
+  onAuthStateChanged(auth, (user) => {
   if (user) {
     loadRecords();
     loadIncome();
+  } else {
+    window.location.href = "login.html";
   }
 });
 
