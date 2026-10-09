@@ -1,57 +1,377 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>週次集計</title>
-</head>
-<body>
-
-<nav>
-  <a href="index.html">入力</a> |
-  <a href="monthly.html">月別</a> |
-  <a href="weekly.html">週次</a> |
-  <a href="daily.html">日別</a> |
-  <a href="records.html">記録</a> |
-  <a href="settings.html">設定</a>
-</nav>
-<hr>
-
-<h1>週次集計</h1>
-
-<div id="weekly-summary"></div>
-
-<script>
-  let records = JSON.parse(localStorage.getItem("records") || "[]");
-
-  function getWeekNumber(date) {
-    const d = new Date(date);
-    const onejan = new Date(d.getFullYear(), 0, 1);
-    const week = Math.ceil((((d - onejan) / 86400000) + onejan.getDay() + 1) / 7);
-    return week;
-  }
-
-  function renderWeeklySummary() {
-    let weekly = {};
-
-    records.forEach(r => {
-      const week = getWeekNumber(r.date);
-      if (!weekly[week]) weekly[week] = 0;
-      weekly[week] += r.amount;
-    });
-
-    let html = "<table border='1' cellpadding='5'><tr><th>週</th><th>支出</th></tr>";
-
-    for (let w in weekly) {
-      html += `<tr><td>${w}週</td><td>${weekly[w]} 円</td></tr>`;
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>週次集計｜ふたりの暮らし</title>
+  <style>
+    :root {
+      --green: #557b63;
+      --dark: #355640;
+      --light: #e6eee5;
+      --ivory: #faf8f0;
+      --white: #fff;
+      --text: #34443a;
+      --muted: #748176;
+      --border: #dce4d9;
+      --red: #a45f48;
     }
 
-    html += "</table>";
+    * { box-sizing: border-box; }
 
-    document.getElementById("weekly-summary").innerHTML = html;
+    body {
+      margin: 0;
+      padding: 20px;
+      background: var(--ivory);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+        "Noto Sans JP", sans-serif;
+    }
+
+    main { max-width: 900px; margin: 0 auto; }
+
+    header { margin-bottom: 22px; }
+
+    h1 {
+      margin: 0 0 8px;
+      color: var(--dark);
+      font-size: 27px;
+    }
+
+    h2 { margin: 0 0 14px; font-size: 18px; }
+
+    .subtitle { color: var(--muted); font-size: 13px; }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    nav a {
+      padding: 9px 13px;
+      border-radius: 10px;
+      background: var(--white);
+      color: var(--dark);
+      text-decoration: none;
+      font-size: 14px;
+      border: 1px solid var(--border);
+    }
+
+    nav a.active {
+      background: var(--green);
+      color: white;
+      border-color: var(--green);
+    }
+
+    .panel {
+      margin-bottom: 18px;
+      padding: 20px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+    }
+
+    .week-picker {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .week-picker button {
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--light);
+      color: var(--dark);
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    #week-label { font-weight: 700; text-align: center; }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .summary-card {
+      padding: 16px;
+      border-radius: 13px;
+      background: var(--ivory);
+    }
+
+    .summary-label {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 9px;
+    }
+
+    .summary-value {
+      font-size: clamp(18px, 3vw, 24px);
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+
+    .expense { color: var(--red); }
+    .income { color: var(--dark); }
+
+    .table-wrap { overflow-x: auto; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+
+    th, td {
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+
+    th { background: var(--ivory); color: var(--dark); }
+    td:last-child, th:last-child { text-align: right; }
+
+    .status {
+      padding: 12px;
+      border-radius: 10px;
+      background: var(--light);
+      color: var(--dark);
+      font-size: 14px;
+    }
+
+    .error { background: #f9e8e4; color: #8a3024; }
+
+    @media (max-width: 560px) {
+      body { padding: 14px; }
+      .panel { padding: 15px; }
+      .summary-grid { grid-template-columns: 1fr; }
+      .week-picker { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>ふたりの暮らし 🌿</h1>
+    <div class="subtitle">週ごとの家計簿</div>
+  </header>
+
+  <nav>
+    <a href="index.html">入力</a>
+    <a href="monthly.html">月別</a>
+    <a href="weekly.html" class="active">週次</a>
+    <a href="daily.html">日別</a>
+    <a href="records.html">記録</a>
+    <a href="settings.html">設定</a>
+  </nav>
+
+  <div id="status" class="status">ログイン状態を確認しています…</div>
+
+  <section id="app" hidden>
+    <div class="panel">
+      <div class="week-picker">
+        <button id="prev-week" type="button">← 前の週</button>
+        <div id="week-label"></div>
+        <button id="next-week" type="button">次の週 →</button>
+      </div>
+      <p class="subtitle">集計期間は日曜日から土曜日です。</p>
+    </div>
+
+    <div class="panel">
+      <h2>今週のまとめ</h2>
+      <div class="summary-grid">
+        <div class="summary-card">
+          <div class="summary-label">週間支出</div>
+          <div class="summary-value expense" id="week-total">—</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">1日平均（7日間）</div>
+          <div class="summary-value" id="daily-average">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>支出の内訳</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>カテゴリー</th><th>支出合計</th></tr></thead>
+          <tbody id="category-table"></tbody>
+          <tfoot><tr><th>合計</th><th id="category-total">0 円</th></tr></tfoot>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>日ごとの支出</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>日付</th><th>件数</th><th>支出合計</th></tr></thead>
+          <tbody id="daily-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+  import {
+    getAuth,
+    onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+  import {
+    getFirestore,
+    collection,
+    getDocs
+  } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCm2ZekCOLi-JceUCcdDW5FyCdtSwh_ZJU",
+    authDomain: "kakeibo-94245.firebaseapp.com",
+    projectId: "kakeibo-94245",
+    storageBucket: "kakeibo-94245.firebasestorage.app",
+    messagingSenderId: "543784840442",
+    appId: "1:543784840442:web:ff3fc3d96d417590952d43"
+  };
+
+  const firebaseApp = initializeApp(firebaseConfig);
+  const auth = getAuth(firebaseApp);
+  const db = getFirestore(firebaseApp);
+
+  const statusBox = document.getElementById("status");
+  const appSection = document.getElementById("app");
+
+  let records = [];
+
+  function dateOnly(date) {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
   }
 
-  renderWeeklySummary();
-</script>
+  // 選択中の週は日曜日を基準にする
+  function getSunday(date) {
+    const sunday = dateOnly(date);
+    sunday.setDate(sunday.getDate() - sunday.getDay());
+    return sunday;
+  }
 
+  let weekStart = getSunday(new Date());
+
+  function addDays(date, days) {
+    const result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return result;
+  }
+
+  function dateKey(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  function formatDate(date) {
+    return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
+  }
+
+  function yen(value) {
+    return Math.round(value).toLocaleString("ja-JP") + " 円";
+  }
+
+  function totalFor(list) {
+    return list.reduce((sum, record) => {
+      const amount = Number(record.amount);
+      return sum + (Number.isFinite(amount) ? amount : 0);
+    }, 0);
+  }
+
+  function render() {
+    const weekEnd = addDays(weekStart, 6);
+
+    document.getElementById("week-label").textContent =
+      `${formatDate(weekStart)} ～ ${formatDate(weekEnd)}`;
+
+    const weeklyRecords = records.filter(record => {
+      return typeof record.date === "string" &&
+        record.date >= dateKey(weekStart) &&
+        record.date <= dateKey(weekEnd);
+    });
+
+    const total = totalFor(weeklyRecords);
+
+    document.getElementById("week-total").textContent = yen(total);
+    document.getElementById("daily-average").textContent = yen(total / 7);
+    document.getElementById("category-total").textContent = yen(total);
+
+    const categories = ["固定費", "生活必需費", "自由費"];
+    document.getElementById("category-table").innerHTML =
+      categories.map(category => {
+        const list = weeklyRecords.filter(record => record.category === category);
+        return `<tr><td>${category}</td><td>${yen(totalFor(list))}</td></tr>`;
+      }).join("");
+
+    const dailyTable = document.getElementById("daily-table");
+    dailyTable.innerHTML = "";
+
+    for (let i = 0; i < 7; i++) {
+      const date = addDays(weekStart, i);
+      const key = dateKey(date);
+      const list = weeklyRecords.filter(record => record.date === key);
+
+      const row = document.createElement("tr");
+      const dateCell = document.createElement("td");
+      const countCell = document.createElement("td");
+      const totalCell = document.createElement("td");
+
+      dateCell.textContent =
+        `${date.getMonth() + 1}/${date.getDate()}（${"日月火水木金土"[date.getDay()]}）`;
+      countCell.textContent = `${list.length} 件`;
+      totalCell.textContent = yen(totalFor(list));
+
+      row.append(dateCell, countCell, totalCell);
+      dailyTable.appendChild(row);
+    }
+  }
+
+  document.getElementById("prev-week").addEventListener("click", () => {
+    weekStart = addDays(weekStart, -7);
+    render();
+  });
+
+  document.getElementById("next-week").addEventListener("click", () => {
+    weekStart = addDays(weekStart, 7);
+    render();
+  });
+
+  onAuthStateChanged(auth, async user => {
+    if (!user) {
+      window.location.replace("login.html");
+      return;
+    }
+
+    statusBox.textContent = "家計簿データを読み込んでいます…";
+    statusBox.classList.remove("error");
+
+    try {
+      const snapshot = await getDocs(collection(db, "records"));
+      records = snapshot.docs.map(item => ({
+        id: item.id,
+        ...item.data()
+      }));
+
+      statusBox.hidden = true;
+      appSection.hidden = false;
+      render();
+    } catch (error) {
+      console.error("週次データ読み込みエラー:", error);
+      statusBox.textContent =
+        "データを読み込めませんでした。Firestoreのルールと接続状態を確認してください。";
+      statusBox.classList.add("error");
+    }
+  });
+</script>
 </body>
 </html>
