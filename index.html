@@ -795,9 +795,6 @@ function render() {
 function clearExpenseForm() {
   editingRecordId = null;
   $("date").value = localDateString();
-  const today = new Date();
-　$("income-month").value =
-  `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
   $("category").value = "固定費";
   $("item").value = "";
   $("amount").value = "";
@@ -1181,6 +1178,10 @@ $("logout-button")?.addEventListener("click", async () => {
 
 $("date").value = localDateString();
 
+  const today = new Date();
+$("income-month").value =
+  `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
+
 onAuthStateChanged(auth, async user => {
   currentUser = user;
 
@@ -1192,22 +1193,21 @@ onAuthStateChanged(auth, async user => {
   appSection.hidden = true;
   showStatus("家計簿データを読み込んでいます…");
 
-  try {
-await Promise.all([
-  loadRecords(),
-  loadCategories()
-]);
 
-await loadIncome();
-renderCategoryOptions();
-render();
-statusBox.hidden = true;
-appSection.hidden = false;
+try {
+  await Promise.all([
+    loadRecords(),
+    loadCategories()
+  ]);
 
-renderCategoryOptions();   
-    render();
-    statusBox.hidden = true;
-    appSection.hidden = false;
+  await loadIncome();
+
+  renderCategoryOptions();
+  render();
+
+  statusBox.hidden = true;
+  appSection.hidden = false;
+
   } catch (error) {
     console.error("家計簿データ読み込みエラー:", error);
     showStatus(
