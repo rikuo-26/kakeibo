@@ -829,6 +829,70 @@ async function loadIncome() {
   $("income_rikuto").value = income.rikuto || "";
   $("income_kaede").value = income.kaede || "";
 }
+async function loadCategories() {
+  const snapshot = await getDoc(doc(db, "settings", "categories"));
+
+  if (snapshot.exists()) {
+    const data = snapshot.data();
+
+    if (Array.isArray(data.categories)) {
+      categories = [
+        ...new Set(
+          data.categories
+            .filter(
+              item => typeof item === "string" && item.trim() !== ""
+            )
+            .map(item => item.trim())
+        )
+      ];
+    }
+  }
+
+  renderCategoryOptions();
+}
+
+function renderCategoryOptions(selectedValue) {
+  const select = $("category");
+  const previousValue = selectedValue ?? select.value;
+
+  select.replaceChildren();
+
+  const availableCategories = [...categories];
+
+  for (const record of records) {
+    const oldCategory = record.category;
+
+    if (
+      typeof oldCategory === "string" &&
+      oldCategory.trim() &&
+      !availableCategories.includes(oldCategory)
+    ) {
+      availableCategories.push(oldCategory);
+    }
+  }
+
+  if (
+    records.some(
+      record => !record.category || !String(record.category).trim()
+    ) &&
+    !availableCategories.includes("カテゴリー未設定")
+  ) {
+    availableCategories.push("カテゴリー未設定");
+  }
+
+  for (const category of availableCategories) {
+    const option = document.createElement("option");
+    option.value = category;
+    option.textContent = category;
+    select.appendChild(option);
+  }
+
+  if (availableCategories.includes(previousValue)) {
+    select.value = previousValue;
+  } else if (availableCategories.length > 0) {
+    select.value = availableCategories[0];
+  }
+}  
 
 async function saveIncome() {
   if (!requireLogin() || saving) return;
@@ -941,6 +1005,7 @@ function editRecord(id) {
 
   editingRecordId = id;
   $("date").value = record.date || localDateString();
+  renderCategoryOptions(record.category || "固定費");
   $("category").value = record.category || "固定費";
   $("item").value = record.item || "";
   $("amount").value = record.amount ?? "";
@@ -1072,7 +1137,13 @@ onAuthStateChanged(auth, async user => {
   showStatus("家計簿データを読み込んでいます…");
 
   try {
-    await Promise.all([loadRecords(), loadIncome()]);
+await Promise.all([
+  loadRecords(),
+  loadIncome(),
+  loadCategories()
+]);
+
+renderCategoryOptions();   
     render();
     statusBox.hidden = true;
     appSection.hidden = false;
