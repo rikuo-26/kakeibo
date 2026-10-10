@@ -329,6 +329,7 @@
 
   let records = [];
   let income = { rikuto: 0, kaede: 0 };
+  let categories = ["固定費", "生活必需費", "自由費"];
   let selectedDate = new Date();
   selectedDate = new Date(
     selectedDate.getFullYear(),
@@ -390,12 +391,18 @@
     balanceElement.className =
       "summary-value " + (balance < 0 ? "expense" : "income");
 
-    const categories = ["固定費", "生活必需費", "自由費"];
     document.getElementById("category-table").innerHTML =
       categories.map(category => {
-        const categoryRecords = monthRecords.filter(
-          record => record.category === category
-        );
+       
+const categoryRecords = monthRecords.filter(record => {
+  const recordCategory =
+    typeof record.category === "string" && record.category.trim()
+      ? record.category
+      : "カテゴリー未設定";
+
+  return recordCategory === category;
+});
+
         return `<tr><td>${category}</td><td>${yen(totalFor(categoryRecords))}</td></tr>`;
       }).join("");
 
@@ -446,6 +453,48 @@
     );
     render();
   });
+  
+async function loadCategories() {
+  const snapshot = await getDoc(doc(db, "settings", "categories"));
+
+  if (snapshot.exists()) {
+    const data = snapshot.data();
+
+    if (Array.isArray(data.categories)) {
+      categories = [
+        ...new Set(
+          data.categories
+            .filter(
+              item => typeof item === "string" && item.trim() !== ""
+            )
+            .map(item => item.trim())
+        )
+      ];
+    }
+  }
+
+  for (const record of records) {
+    const category = record.category;
+
+    if (
+      typeof category === "string" &&
+      category.trim() !== "" &&
+      !categories.includes(category)
+    ) {
+      categories.push(category);
+    }
+  }
+
+  if (
+    records.some(
+      record => !record.category || !String(record.category).trim()
+    ) &&
+    !categories.includes("カテゴリー未設定")
+  ) {
+    categories.push("カテゴリー未設定");
+  }
+}
+
 
   async function loadData() {
     const recordsSnapshot = await getDocs(collection(db, "records"));
@@ -462,6 +511,7 @@
         kaede: Number(savedIncome.kaede) || 0
       };
     }
+    await loadCategories();
 
     statusBox.hidden = true;
     appSection.hidden = false;
