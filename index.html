@@ -1195,9 +1195,14 @@ onAuthStateChanged(auth, async user => {
   try {
 await Promise.all([
   loadRecords(),
-  loadIncome(),
   loadCategories()
 ]);
+
+await loadIncome();
+renderCategoryOptions();
+render();
+statusBox.hidden = true;
+appSection.hidden = false;
 
 renderCategoryOptions();   
     render();
