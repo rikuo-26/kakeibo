@@ -264,12 +264,7 @@
     getAuth,
     onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
-  import {
-    getFirestore,
-    collection,
-    getDocs
-  } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
-
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
   const firebaseConfig = {
     apiKey: "AIzaSyCm2ZekCOLi-JceUCcdDW5FyCdtSwh_ZJU",
     authDomain: "kakeibo-94245.firebaseapp.com",
@@ -287,6 +282,49 @@
   const appSection = document.getElementById("app");
 
   let records = [];
+  let categories = ["固定費", "生活必需費", "自由費"];
+  
+async function loadCategories() {
+  const snapshot = await getDoc(doc(db, "settings", "categories"));
+
+  if (snapshot.exists()) {
+    const data = snapshot.data();
+
+    if (Array.isArray(data.categories)) {
+      categories = [
+        ...new Set(
+          data.categories
+            .filter(
+              item => typeof item === "string" && item.trim() !== ""
+            )
+            .map(item => item.trim())
+        )
+      ];
+    }
+  }
+
+  for (const record of records) {
+    const category = record.category;
+
+    if (
+      typeof category === "string" &&
+      category.trim() !== "" &&
+      !categories.includes(category)
+    ) {
+      categories.push(category);
+    }
+  }
+
+  if (
+    records.some(
+      record => !record.category || !String(record.category).trim()
+    ) &&
+    !categories.includes("カテゴリー未設定")
+  ) {
+    categories.push("カテゴリー未設定");
+  }
+}
+
 
   function dateOnly(date) {
     return new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -347,10 +385,18 @@
     document.getElementById("daily-average").textContent = yen(total / 7);
     document.getElementById("category-total").textContent = yen(total);
 
-    const categories = ["固定費", "生活必需費", "自由費"];
     document.getElementById("category-table").innerHTML =
       categories.map(category => {
-        const list = weeklyRecords.filter(record => record.category === category);
+       
+const list = weeklyRecords.filter(record => {
+  const recordCategory =
+    typeof record.category === "string" && record.category.trim()
+      ? record.category
+      : "カテゴリー未設定";
+
+  return recordCategory === category;
+});
+
         return `<tr><td>${category}</td><td>${yen(totalFor(list))}</td></tr>`;
       }).join("");
 
@@ -403,6 +449,8 @@
         ...item.data()
       }));
 
+      await loadCategories();
+      
       statusBox.hidden = true;
       appSection.hidden = false;
       render();
