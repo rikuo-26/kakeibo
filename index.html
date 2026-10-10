@@ -473,8 +473,11 @@ button:disabled {
   <div id="app" hidden>
     <section class="panel">
       <h2>収入入力</h2>
-
-      <div class="income-grid">
+      
+            <label for="income-month">収入の対象月</label>
+      <input type="month" id="income-month" required>
+      
+　　　　<div class="income-grid">
         <div>
           <label for="income_rikuto">陸翔の収入</label>
           <input type="number" id="income_rikuto"
@@ -792,6 +795,9 @@ function render() {
 function clearExpenseForm() {
   editingRecordId = null;
   $("date").value = localDateString();
+  const today = new Date();
+　$("income-month").value =
+  `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
   $("category").value = "固定費";
   $("item").value = "";
   $("amount").value = "";
@@ -810,16 +816,44 @@ async function loadRecords() {
 }
 
 async function loadIncome() {
-  const snapshot = await getDoc(doc(db, "settings", "income"));
+  const month = $("income-month").value;
 
-  if (snapshot.exists()) {
-    const data = snapshot.data();
+  if (!month) return;
+
+  const monthlySnapshot = await getDoc(
+    doc(db, "monthlyIncome", month)
+  );
+
+  if (monthlySnapshot.exists()) {
+    const data = monthlySnapshot.data();
+
     income = {
       rikuto: safeNumber(data.rikuto),
       kaede: safeNumber(data.kaede)
     };
   } else {
-    income = { rikuto: 0, kaede: 0 };
+    const now = new Date();
+    const currentMonth =
+      `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+
+    if (month === currentMonth) {
+      const oldSnapshot = await getDoc(
+        doc(db, "settings", "income")
+      );
+
+      if (oldSnapshot.exists()) {
+        const data = oldSnapshot.data();
+
+        income = {
+          rikuto: safeNumber(data.rikuto),
+          kaede: safeNumber(data.kaede)
+        };
+      } else {
+        income = { rikuto: 0, kaede: 0 };
+      }
+    } else {
+      income = { rikuto: 0, kaede: 0 };
+    }
   }
 
   $("income_rikuto").value = income.rikuto || "";
@@ -890,11 +924,18 @@ function renderCategoryOptions(selectedValue) {
   }
 }  
 
+
 async function saveIncome() {
   if (!requireLogin() || saving) return;
 
+  const month = $("income-month").value;
   const rikutoText = $("income_rikuto").value;
   const kaedeText = $("income_kaede").value;
+
+  if (!month) {
+    alert("収入の対象月を選択してください。");
+    return;
+  }
 
   if (rikutoText === "" || kaedeText === "") {
     alert("ふたりの収入を入力してください。");
@@ -916,10 +957,19 @@ async function saveIncome() {
 
   try {
     const newIncome = { rikuto, kaede };
-    await setDoc(doc(db, "settings", "income"), newIncome);
+
+    await setDoc(
+      doc(db, "monthlyIncome", month),
+      newIncome
+    );
+
     income = newIncome;
     renderSummary();
-    alert("収入を保存しました！");
+
+    showNotice(
+      "収入を保存しました！",
+      `${month}のふたりの収入を保存しました。`
+    );
   } catch (error) {
     console.error("収入保存エラー:", error);
     alert("収入の保存に失敗しました：" + error.message);
@@ -927,6 +977,7 @@ async function saveIncome() {
     setSaving(false);
   }
 }
+
 
 async function addRecord() {
   if (!requireLogin() || saving) return;
@@ -1101,6 +1152,15 @@ async function deleteRecord(id) {
 
 
 $("save-income-button").addEventListener("click", saveIncome);
+$("income-month").addEventListener("change", async () => {
+  try {
+    await loadIncome();
+    renderSummary();
+  } catch (error) {
+    console.error("月別収入読み込みエラー:", error);
+    alert("収入の読み込みに失敗しました。");
+  }
+});
 $("add-button").addEventListener("click", addRecord);
 $("cancel-edit-button").addEventListener("click", clearExpenseForm);
 
