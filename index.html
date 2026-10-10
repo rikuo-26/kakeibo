@@ -504,7 +504,7 @@ button:disabled {
       <input type="date" id="date" required>
 
       <label for="category">分類</label>
-      <select id="category">
+        <select id="category"></select>
         <option value="固定費">固定費</option>
         <option value="生活必需費">生活必需費</option>
         <option value="自由費">自由費</option>
@@ -544,20 +544,8 @@ button:disabled {
         </div>
       </div>
 
-      <div class="category-summary">
-        <div class="category-row">
-          <span>固定費</span>
-          <strong id="fixed-total">0 円</strong>
-        </div>
-        <div class="category-row">
-          <span>生活必需費</span>
-          <strong id="essential-total">0 円</strong>
-        </div>
-        <div class="category-row">
-          <span>自由費</span>
-          <strong id="free-total">0 円</strong>
-        </div>
-      </div>
+<div class="category-summary" id="category-summary"></div>
+
       <p class="subtitle">集計は登録済みの全支出を対象にしています。</p>
     </section>
 
@@ -631,6 +619,7 @@ const listElement = $("list");
 
 let records = [];
 let income = { rikuto: 0, kaede: 0 };
+let categories = ["固定費", "生活必需費", "自由費"];
 let editingRecordId = null;
 let currentUser = null;
 let saving = false;
@@ -671,30 +660,53 @@ function setSaving(value) {
   $("add-button").disabled = value;
 }
 
+
 function renderSummary() {
-  let fixed = 0;
-  let essential = 0;
-  let free = 0;
+  const categoryTotals = new Map();
+
+  for (const category of categories) {
+    categoryTotals.set(category, 0);
+  }
+
+  let total = 0;
 
   for (const record of records) {
     const amount = safeNumber(record.amount);
-    if (record.category === "固定費") fixed += amount;
-    if (record.category === "生活必需費") essential += amount;
-    if (record.category === "自由費") free += amount;
+    total += amount;
+
+    const category =
+      typeof record.category === "string" && record.category.trim()
+        ? record.category
+        : "カテゴリー未設定";
+
+    categoryTotals.set(
+      category,
+      (categoryTotals.get(category) || 0) + amount
+    );
   }
 
-  const total = fixed + essential + free;
-  const incomeTotal = safeNumber(income.rikuto) + safeNumber(income.kaede);
+  const incomeTotal =
+    safeNumber(income.rikuto) + safeNumber(income.kaede);
   const balance = incomeTotal - total;
 
   $("income-total").textContent = yen(incomeTotal);
   $("expense-total").textContent = yen(total);
   $("balance").textContent = yen(balance);
   $("balance").classList.toggle("negative", balance < 0);
-  $("fixed-total").textContent = yen(fixed);
-  $("essential-total").textContent = yen(essential);
-  $("free-total").textContent = yen(free);
+
+  const summary = $("category-summary");
+  summary.replaceChildren();
+
+  for (const [category, amount] of categoryTotals) {
+    const row = makeElement("div", "category-row");
+    const name = makeElement("span", "", category);
+    const value = makeElement("strong", "", yen(amount));
+
+    row.append(name, value);
+    summary.appendChild(row);
+  }
 }
+
 
 function makeElement(tag, className, text) {
   const element = document.createElement(tag);
