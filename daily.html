@@ -336,10 +336,13 @@ body {
     getAuth,
     onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+ 
   import {
     getFirestore,
     collection,
-    getDocs
+    getDocs,
+    doc,
+    getDoc
   } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -359,6 +362,50 @@ body {
   const appSection = document.getElementById("app");
 
   let records = [];
+  
+let categories = ["固定費", "生活必需費", "自由費"];
+
+async function loadCategories() {
+  const snapshot = await getDoc(doc(db, "settings", "categories"));
+
+  if (snapshot.exists()) {
+    const data = snapshot.data();
+
+    if (Array.isArray(data.categories)) {
+      categories = [
+        ...new Set(
+          data.categories
+            .filter(
+              item => typeof item === "string" && item.trim() !== ""
+            )
+            .map(item => item.trim())
+        )
+      ];
+    }
+  }
+
+  for (const record of records) {
+    const category = record.category;
+
+    if (
+      typeof category === "string" &&
+      category.trim() !== "" &&
+      !categories.includes(category)
+    ) {
+      categories.push(category);
+    }
+  }
+
+  if (
+    records.some(
+      record => !record.category || !String(record.category).trim()
+    ) &&
+    !categories.includes("カテゴリー未設定")
+  ) {
+    categories.push("カテゴリー未設定");
+  }
+}
+
   const today = new Date();
   let selectedMonth = new Date(today.getFullYear(), today.getMonth(), 1);
   let selectedDay = dateKey(today);
@@ -601,6 +648,8 @@ body {
         id: item.id,
         ...item.data()
       }));
+      
+      await loadCategories();
 
       statusBox.hidden = true;
       appSection.hidden = false;
