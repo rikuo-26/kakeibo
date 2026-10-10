@@ -264,7 +264,15 @@
     getAuth,
     onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  doc,
+  getDoc
+} from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+
   const firebaseConfig = {
     apiKey: "AIzaSyCm2ZekCOLi-JceUCcdDW5FyCdtSwh_ZJU",
     authDomain: "kakeibo-94245.firebaseapp.com",
